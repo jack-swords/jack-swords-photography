@@ -1,0 +1,50 @@
+{
+  "name": "jack-swords-photography",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "seed": "tsx --env-file-if-exists=.env.local scripts/seed.ts",
+    "typegen": "sanity schema extract --path=./src/sanity/extract.json && sanity typegen generate"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "dependencies": {
+    "@portabletext/react": "^8.0.1",
+    "@sanity/icons": "^5.2.3",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/orderable-document-list": "^2.0.25",
+    "@sanity/vision": "^6.16.0",
+    "next": "^16.3.7",
+    "next-sanity": "^13.3.4",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "sanity": "^6.16.0",
+    "styled-components": "^6.5.3"
+  },
+  "devDependencies": {
+    "@sanity/client": "^8.8.0",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.3",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.7",
+    "postcss": "^8.5.28",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

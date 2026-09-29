@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+build
+.vercel
+.env*.local
+.env
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.sanity
+/seed-output
