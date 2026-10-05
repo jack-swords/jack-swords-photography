@@ -191,6 +191,41 @@ V['f-sketch'] = () => {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 450" fill="#111">\n  <g opacity=".08">\n${wash.map(d => `    <path d="${d}"/>`).join('\n')}\n  </g>\n${P.map(d => `  <path d="${d}"/>`).join('\n')}\n</svg>\n`;
 };
 
+// F's skeleton (same seed, spines and widths) — spine() is built before any other draw, so geometry matches F exactly
+const sketchSkeleton = () => layout(77, { n: 8, jitterL: .09, wristLen: 40 }).map(f => {
+  const s = spine(f.root, f.tip, .05 + f.r() * .008, 3.5, f.r);
+  return { f, s, W: fanW(f, .75, .65), hw: halfwFn(fanW(f, .75, .65), .65) };
+});
+
+// G — F's shape, filled with B's bristle strokes
+V['g-sketch-drybrush'] = () => {
+  const P = [];
+  for (const { f, s, W, hw } of sketchSkeleton()) {
+    const nb = 5 + Math.floor(f.r() * 4);
+    for (let k = 0; k < nb; k++) {
+      const u = k / (nb - 1) - .5, end = .82 + f.r() * .2 - Math.abs(u) * .3 * f.r();
+      P.push(ribbon(s, f.r() * .05, end, W / nb * (1.3 + f.r() * .8), f.r, { off: t => u * 1.8 * hw(t), amp: .45, taper0: .08, taper1: .25 + f.r() * .3, press: .4 }));
+    }
+  }
+  return svg(P, '0 0 500 450');
+};
+
+// H — F's outlines, each edge laid down as a dry-brush stroke of a few bristles that break up toward the tip
+V['h-sketch-drybrush-outline'] = () => {
+  const P = [];
+  for (const { f, s, hw } of sketchSkeleton()) {
+    for (const side of [1, -1]) {
+      const nb = 3 + Math.floor(f.r() * 3), t0 = side > 0 ? f.r() * .04 : .06 + f.r() * .08;
+      for (let k = 0; k < nb; k++) {
+        const d = (k / Math.max(1, nb - 1) - .5) * 2.6 + (f.r() - .5) * .8;
+        const end = (side > 0 ? 1.01 : .95) - f.r() * .18 * (k ? 1 : .2);
+        P.push(ribbon(s, t0 + f.r() * .04, end, (side > 0 ? 1.6 : 1.3) + f.r() * .9, f.r, { off: t => side * hw(t) + d * Math.min(1, t * 4), amp: .6, taper0: .1, taper1: .3 + f.r() * .3, press: .55 }));
+      }
+    }
+  }
+  return svg(P, '0 0 500 450');
+};
+
 
 // tight viewBox from the path coordinates, with a little breathing room
 function fit(src) {
