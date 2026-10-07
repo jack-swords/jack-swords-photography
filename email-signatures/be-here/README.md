@@ -13,7 +13,7 @@ Built from `Full Design with text example.svg`. A single signature that works in
 ## What's editable and what's fixed
 
 - **Editable (above the line):** name, job title, email, phone, website, and both social labels and links. Leave a field empty and its line is removed.
-- **Fixed (below the line):** the divider, the logo and the strapline. They're a single image, so the serif lettering stays exact in every mail client.
+- **Fixed (below the line):** the divider (coded), plus the logo and strapline. The logo and strapline are one image, so the serif lettering stays exact in every mail client.
 
 ## Fonts
 
@@ -40,4 +40,4 @@ The classic desktop app can't show embedded (base64) images. Do this first:
 2. Put that folder URL in the generator's **Image folder URL** field.
 3. Copy the signature and paste it into Outlook, or use **Download .htm** and save the file to `%APPDATA%\Microsoft\Signatures`.
 
-The hosted images are also the more reliable option for New Outlook, Outlook on the web and Outlook for Mac.
+A hosted image is also the more reliable option for New Outlook, Outlook on the web and Outlook for Mac.
