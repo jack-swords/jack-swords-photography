@@ -30,23 +30,38 @@ There's no maximum width. The divider is 266px long, as designed, and the social
 
 ## How the light/dark swap works
 
-Both logos are in the signature. A small `<style>` block at the top switches between them:
+Both logos are in the signature: the dark logo for light mode, and the light logo for dark mode. Mail apps and Outlook's editors strip different parts of HTML, so the swap is built in independent layers. Whichever parts survive, any one of them can still do the swap.
 
-- **Light mode:** the dark logo shows. The light logo is hidden with inline styles.
-- **Dark mode:** the rules hide the dark logo and show the light one. They also set the text to off-white `#FEFEFE` and the divider to `#949494`. Two kinds of rule do this:
-  - `@media (prefers-color-scheme: dark)`, for Apple Mail, iPhone and iPad Mail, and other WebKit-based apps.
-  - `[data-ogsc]`, the attribute Outlook.com and Outlook for iOS and Android add in dark mode.
+1. **`<picture>` with a dark-mode source.** This needs no `<style>` block at all. Apple Mail and iPhone/iPad Mail use it to load the light logo in dark mode.
+2. **A `<style>` block** with two kinds of rule:
+   - `@media (prefers-color-scheme: dark)`, for Apple Mail, iPhone/iPad Mail and other WebKit-based apps.
+   - `[data-ogsc]`, the attribute Outlook.com and Outlook for iOS and Android add in dark mode.
+
+   Each rule finds the logos three ways: by class, by alt text, and by file name (the last only when images are hosted). Editors often strip class names but rarely alt text, so the swap still works without classes. The block is included twice, before the signature and inside it, because editors strip in different places.
+3. In dark mode the same rules turn the text off-white (`#FEFEFE`) and the divider `#949494`.
+
+The light logo is hidden with inline styles on the image itself (`display:none`, 1 × 1px, `mso-hide:all`). If every swap layer is stripped, only the dark logo shows, and its fine off-white edge keeps it readable.
 
 Colours are a very slightly off black (`#121212`, from the design) and off white (`#FEFEFE`). The signature has no background colour, so it takes the email's own background.
 
-### Where it won't swap, and what shows instead
+### Tested in a browser
 
-Some mail apps ignore these rules: Classic Outlook for Windows, Gmail, and possibly New Outlook. Outlook's signature editors may also strip the `<style>` block when you paste the signature in. In either case the signature still works, without the swap:
+These cases were rendered from the exact HTML the Copy button produces, in a browser set to light and to dark mode:
 
-- **Swap code stripped:** the light logo stays hidden. The dark logo shows, and its fine off-white edge keeps it readable if the app darkens the email. Outlook recolours the text itself.
-- **Inline styles stripped as well:** the light logo is only 1 × 1 px, so two logos never appear.
+| What a mail app or editor keeps | Light mode | Dark mode |
+| --- | --- | --- |
+| Everything | Dark logo | Light logo |
+| Everything except class names | Dark logo | Light logo (matched by alt text) |
+| No `<style>` block | Dark logo | Light logo (via `<picture>`) |
+| No `<style>` block and no `<picture>` source | Dark logo | Dark logo with its edge |
+| Nothing (all styling stripped) | Dark logo | Dark logo; the light one is 1 × 1px |
 
-I tested all of these cases in a browser using the HTML the Copy button produces. Outlook itself hasn't been tested yet. Send a test email to yourself and view it in each app you care about, in dark mode. If your Outlook strips the swap code, adding the signature on the mail server with a service such as Exclaimer or CodeTwo keeps the `<style>` block intact.
+### If you still see the outlined logo
+
+Paste the source of the received test email into **Check a test email** in the generator. It reports which layers survived. There are two possible causes:
+
+- **The app you're viewing in doesn't support dark-mode code.** Classic Outlook for Windows ignores all of it when showing email, so the outlined logo is the most it can display, whatever the code does. Gmail is similar.
+- **The code was stripped before sending.** This happens when Outlook's signature editor, or Outlook when composing, removes the `<style>` block and the `<picture>` source. No change to the signature code can prevent that. The fix is to add the signature on the mail server with a service such as Exclaimer or CodeTwo, which keeps the HTML intact.
 
 ## Divider
 

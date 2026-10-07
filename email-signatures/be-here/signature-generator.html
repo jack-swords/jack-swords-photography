@@ -17,6 +17,10 @@
   @media (max-width:820px) { .grid { grid-template-columns:1fr; } }
   .panel { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:20px; }
   label { display:block; font-size:12px; font-weight:600; margin:0 0 4px; }
+  textarea { width:100%; font:12px/1.4 ui-monospace, Menlo, monospace; padding:8px 10px; border:1px solid var(--line); border-radius:6px; }
+  .report { list-style:none; padding:0; margin:12px 0 0; font-size:13px; }
+  .report li { padding:4px 0; border-top:1px solid var(--line); }
+  .report li b { display:inline-block; width:1.4em; }
   input, select { width:100%; font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:6px; margin:0 0 12px; background:#fff; color:var(--ink); }
   fieldset { border:0; padding:0; margin:0 0 8px; }
   legend { font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:8px 0 10px; }
@@ -93,6 +97,20 @@
         <div class="toast" id="toast"></div>
       </section>
 
+      <details class="panel">
+        <summary>Check a test email</summary>
+        <p class="hint" style="margin:10px 0">Seeing the outlined logo in dark mode? Send yourself a test, open the source of the <b>received</b> email, and paste it here. The checker shows which parts of the swap code survived.</p>
+        <ul class="hint" style="margin:0 0 10px;padding-left:18px">
+          <li>Outlook on the web / New Outlook: open the email → ⋯ → View → View message source.</li>
+          <li>Classic Outlook (Windows): open the email in its own window → Actions → Other Actions → View Source.</li>
+          <li>Apple Mail: View → Message → Raw Source.</li>
+          <li>Gmail: ⋮ → Show original.</li>
+        </ul>
+        <textarea id="source" rows="6" placeholder="Paste the email source here"></textarea>
+        <div class="actions" style="margin-top:8px"><button type="button" id="check">Check</button></div>
+        <ul id="report" class="report"></ul>
+      </details>
+
       <details class="panel" open>
         <summary>Adding it to Outlook</summary>
         <ol>
@@ -130,24 +148,34 @@ const THEME = { ink: OFF_BLACK, rule: "#898989" };
 // styles below have been stripped.
 const OUTLOOK_DARK_PREVIEW = { ink: OFF_WHITE, rule: "#949494" };
 
-// Dark-mode swap. Both logos are in the signature. The light one is hidden inline, and
-// these rules show it (and hide the dark one) in dark mode:
-//  - @media (prefers-color-scheme: dark): Apple Mail, iPhone Mail and other WebKit clients.
-//  - [data-ogsc]: the attribute Outlook.com and Outlook iOS/Android add in dark mode.
-// If an editor strips this <style> block, the hidden logo stays hidden and the dark logo
-// (with its edge) shows. If it strips the inline styles too, the hidden logo is still
-// only 1 x 1px.
-const DARK_RULES = `.bh-ink, .bh-ink a { color:${OFF_WHITE} !important; }
-.bh-rule { background-color:#949494 !important; }
-.bh-logo-l { display:none !important; }
-.bh-logo-d { display:block !important; max-height:none !important; overflow:visible !important; }
-.bh-logo-d img { width:148px !important; height:41px !important; }`;
-const scoped = (prefix, rules) => rules.replace(/(^|\n)/g, "$1" + prefix + " ").replace(/, \./g, ", " + prefix + " .");
+// Dark-mode swap. Both logos are in the signature, and the swap is layered so that
+// whatever part of the code a mail app keeps, it still has a way to switch:
+//  1. <picture> with a dark-mode <source>. It needs no <style> block, so it survives
+//     editors that strip one (Apple Mail, iPhone and iPad Mail).
+//  2. A <style> block with @media (prefers-color-scheme: dark), for WebKit-based apps, and
+//     [data-ogsc], the attribute Outlook.com and Outlook iOS/Android add in dark mode.
+//     Each rule targets the logos three ways: by class, by alt text (alt is almost never
+//     stripped, unlike class) and by file name (for hosted images). The block appears
+//     twice, before the signature and inside it, since editors strip in different places.
+// The light logo is hidden inline on the image itself (display:none, 1 x 1px, mso-hide),
+// so if every rule is stripped only the dark logo (with its edge) shows.
+const ALT_DARK = "Be.Here. Your invitation to press pause.";
+const ALT_LIGHT = "Be.Here. – Your invitation to press pause.";
+const SEL_DARK = `.bh-img-dark, img[alt="${ALT_DARK}"], img[src*="logo-dark.png"]`;
+const SEL_LIGHT = `.bh-img-light, img[alt="${ALT_LIGHT}"], img[src*="logo-light.png"]`;
+const DARK_RULES = [
+  [`.bh-ink, .bh-ink a`, `color:${OFF_WHITE} !important;`],
+  [`.bh-rule`, `background-color:#949494 !important;`],
+  [SEL_DARK, `display:none !important;`],
+  [SEL_LIGHT, `display:block !important; width:148px !important; height:41px !important; max-height:none !important; max-width:none !important; overflow:visible !important;`],
+];
+const rules = (prefix = "") => DARK_RULES.map(([sel, decl]) =>
+  sel.split(", ").map(s => prefix + s).join(", ") + ` { ${decl} }`).join("\n");
 const SWAP_STYLE = `<style>
 @media (prefers-color-scheme: dark) {
-${DARK_RULES}
+${rules()}
 }
-${scoped("[data-ogsc]", DARK_RULES)}
+${rules("[data-ogsc] ")}
 </style>`;
 
 // Instrument Sans shows where it's installed; Arial matches its widths best otherwise.
@@ -156,7 +184,7 @@ const FONT = "'Instrument Sans', Arial, Helvetica, sans-serif";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const telHref = s => "tel:" + s.replace(/[^\d+]/g, "");
 
-function buildSignature(d, logos, t = THEME) {
+function buildSignature(d, logos, t = THEME, swap = "") {
   const text = (size, weight, ls) =>
     `font-family:${FONT};font-size:${size}px;line-height:18px;mso-line-height-rule:exactly;font-weight:${weight};letter-spacing:${ls}px;color:${t.ink};`;
   const body = text(12, 400, -0.12);
@@ -174,18 +202,20 @@ function buildSignature(d, logos, t = THEME) {
     d.s2 && (d.s2Url ? link(d.s2, d.s2Url) : esc(d.s2)),
   ]);
   const logoHref = d.webUrl || (d.web ? "https://" + d.web.replace(/^https?:\/\//, "") : "");
-  const alt = "Be.Here. Your invitation to press pause.";
   const wrap = img => logoHref ? `<a href="${esc(logoHref)}" style="text-decoration:none;">${img}</a>` : img;
-  const imgStyle = "display:block;border:0;outline:none;text-decoration:none;";
+  const imgStyle = "border:0;outline:none;text-decoration:none;";
   const logo =
-    `<div class="bh-logo-l">${wrap(`<img src="${esc(logos.dark)}" width="148" height="41" alt="${alt}" style="${imgStyle}width:148px;height:41px;">`)}</div>` +
-    `<!--[if !mso]><!--><div class="bh-logo-d" style="display:none;max-height:0;overflow:hidden;mso-hide:all;">${wrap(`<img src="${esc(logos.light)}" width="1" height="1" alt="${alt}" style="${imgStyle}width:1px;height:1px;">`)}</div><!--<![endif]-->`;
+    wrap(`<picture><source srcset="${esc(logos.light)}" media="(prefers-color-scheme: dark)">` +
+      `<img class="bh-img-dark" src="${esc(logos.dark)}" width="148" height="41" alt="${ALT_DARK}" style="display:block;${imgStyle}width:148px;height:41px;"></picture>`) +
+    `<!--[if !mso]><!-->` +
+    wrap(`<img class="bh-img-light" src="${esc(logos.light)}" width="1" height="1" alt="${ALT_LIGHT}" style="display:none;${imgStyle}width:1px;height:1px;max-height:0;max-width:0;overflow:hidden;mso-hide:all;">`) +
+    `<!--<![endif]-->`;
 
   // No card or fixed width: the signature sits straight in the email body. The table's
   // width only sets the divider's minimum length (266px, as designed); nowrap cells let
   // longer names, titles or addresses widen it instead of wrapping.
   const cell = (style, inner, attrs = "") => `<td${attrs} class="bh-ink" nowrap style="white-space:nowrap;${style}">${inner}</td>`;
-  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="266" style="width:266px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="266" style="width:266px;border-collapse:collapse;color:${t.ink};mso-table-lspace:0pt;mso-table-rspace:0pt;">
 ${d.name ? `<tr>${cell(text(14, 600, -0.14), esc(d.name), ' colspan="2"')}</tr>` : ""}
 ${d.title ? `<tr>${cell(body, esc(d.title), ' colspan="2"')}</tr>` : ""}
 ${spacer(14)}
@@ -193,7 +223,7 @@ ${spacer(14)}
 ${spacer(24)}
 <tr><td colspan="2" class="bh-rule" height="1" bgcolor="${t.rule}" style="height:1px;background-color:${t.rule};font-size:1px;line-height:1px;mso-line-height-rule:exactly;">&nbsp;</td></tr>
 ${spacer(22)}
-<tr><td colspan="2" style="font-size:1px;line-height:1px;">${logo}</td></tr>
+<tr><td colspan="2" class="bh-ink" style="font-size:1px;line-height:1px;color:${t.ink};">${swap}${logo}</td></tr>
 </table>`;
 }
 
@@ -201,17 +231,20 @@ const ids = ["name", "title", "email", "phone", "web", "webUrl", "s1", "s1Url", 
 const read = () => Object.fromEntries(ids.map(id => [id, document.getElementById(id).value.trim()]));
 const logoSrcs = d => Object.fromEntries(Object.entries(LOGOS).map(([k, l]) =>
   [k, d.imgBase ? d.imgBase.replace(/\/+$/, "") + "/" + l.file : l.data]));
-const signatureHtml = d => SWAP_STYLE + "\n" + buildSignature(d, logoSrcs(d));
+const signatureHtml = d => SWAP_STYLE + "\n" + buildSignature(d, logoSrcs(d), THEME, SWAP_STYLE);
 
 // The page previews the dark-mode swap through its [data-ogsc] rules only, so the
 // previews don't change with this computer's own light/dark setting.
-document.head.insertAdjacentHTML("beforeend", `<style>${scoped("[data-ogsc]", DARK_RULES)}</style>`);
+document.head.insertAdjacentHTML("beforeend", `<style>${rules("[data-ogsc] ")}</style>`);
 
 function render() {
   const d = read();
   document.getElementById("out-light").innerHTML = buildSignature(d, logoSrcs(d));
   document.getElementById("out-dark").innerHTML = buildSignature(d, logoSrcs(d));
   document.getElementById("out-fallback").innerHTML = buildSignature(d, logoSrcs(d), OUTLOOK_DARK_PREVIEW);
+  // The <picture> swap follows this computer's own light/dark setting; take it out of the
+  // previews so each one shows its labelled mode.
+  document.querySelectorAll(".stages source").forEach(s => s.remove());
 }
 
 function plainText(d) {
@@ -240,12 +273,33 @@ async function copy() {
 
 function download() {
   const d = read();
-  const doc = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>${esc(d.name || "Signature")}</title>\n${SWAP_STYLE}\n</head>\n<body style="margin:0;">\n${buildSignature(d, logoSrcs(d))}\n</body></html>`;
+  const doc = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>${esc(d.name || "Signature")}</title>\n${SWAP_STYLE}\n</head>\n<body style="margin:0;">\n${buildSignature(d, logoSrcs(d), THEME, SWAP_STYLE)}\n</body></html>`;
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([doc], { type: "text/html" }));
   a.download = `Be-Here-${(d.name || "signature").replace(/\s+/g, "-")}.htm`;
   a.click(); URL.revokeObjectURL(a.href);
 }
+
+// Reads the source of a received test email and reports which parts of the swap survived.
+function checkSource() {
+  let src = document.getElementById("source").value;
+  // Undo quoted-printable encoding, which raw email sources usually use.
+  src = src.replace(/=\r?\n/g, "").replace(/=([0-9A-F]{2})/gi, (_, h) => String.fromCharCode(parseInt(h, 16)));
+  const has = re => re.test(src);
+  const styleKept = has(/<style[^>]*>[^<]*(bh-img-light|logo-light\.png|Be\.Here\. \u2013|Be\.Here\. &#8211;|Be\.Here\. &ndash;)/i);
+  const checks = [
+    [has(/bh-img-dark|Be\.Here\. Your invitation/i), "Signature found in the email", "The signature isn't in this source. Check you pasted the received email."],
+    [has(/<img[^>]+(bh-img-light|alt="Be\.Here\. (\u2013|&#8211;|&ndash;))/i), "Light logo is in the email", "Light logo was removed. Outlook dropped the hidden image, so nothing can swap to it."],
+    [styleKept, "Swap <style> block survived", "Swap <style> block was stripped. This is why you see the outlined logo."],
+    [styleKept && has(/prefers-color-scheme/i), "Dark-mode media query survived (Apple Mail, iPhone Mail)", "Dark-mode media query is missing."],
+    [styleKept && has(/data-ogsc/i), "Outlook dark-mode rules survived (Outlook.com, Outlook iOS/Android)", "Outlook dark-mode rules are missing."],
+    [has(/<source[^>]+prefers-color-scheme/i), "<picture> swap survived (Apple Mail, iPhone Mail)", "<picture> swap was stripped."],
+  ];
+  document.getElementById("report").innerHTML = checks.map(([ok, yes, no]) =>
+    `<li><b>${ok ? "✓" : "✗"}</b>${esc(ok ? yes : no)}</li>`).join("") +
+    `<li class="hint" style="margin:0">Classic Outlook for Windows ignores all dark-mode code when <i>displaying</i> email, even when the code survives. In those apps the outlined logo is the most that can show.</li>`;
+}
+document.getElementById("check").addEventListener("click", checkSource);
 
 document.getElementById("form").addEventListener("input", render);
 document.querySelectorAll("[data-copy]").forEach(b => b.addEventListener("click", copy));
