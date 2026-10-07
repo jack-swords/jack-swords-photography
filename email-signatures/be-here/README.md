@@ -1,14 +1,14 @@
 # Be.Here. email signatures (Outlook)
 
-Built from `Full Design with text example.svg`. Light and dark versions, 316 × 249 px, spacing matched to the design.
+Built from `Full Design with text example.svg`. A single signature that works in both light and dark mode, 316 × 249 px, with spacing matched to the design.
 
 ## Files
 
 | File | What it is |
 | --- | --- |
 | `signature-generator.html` | Open in a browser. Edit the text, then **Copy signature** and paste into Outlook. Works offline, with the logo embedded. |
-| `assets/logo-light.png`, `assets/logo-dark.png` | The fixed logo and strapline at 3× resolution (shown at 148 × 41). Upload these if you want hosted images. |
-| `preview-comparison.png` | Left: the original design. Middle: the build in Instrument Sans. Right: the build in the Arial fallback. |
+| `assets/logo.png` | The fixed logo and strapline at 3× resolution (shown at 148 × 41). Upload it if you want a hosted image. |
+| `preview-comparison.png` | Columns, left to right: the original design, the build in Instrument Sans, the build in the Arial fallback. Top row: light mode. Bottom row: the original dark design, then a simulation of Outlook's dark mode. |
 
 ## What's editable and what's fixed
 
@@ -23,17 +23,20 @@ The font stack is `'Instrument Sans', Arial, Helvetica, sans-serif`. Outlook doe
 - Body: 12px, weight 400, letter-spacing −1%
 - Every line is 18px tall, the same rhythm as the design
 
-## Light and dark mode
+## Light and dark mode: one signature
 
-- **Light:** white card, #121212 text. **Dark:** #292929 card, white text. Both colours are set on the signature itself, so each version keeps its look in any client.
-- Outlook's dark mode can still recolour the light signature. To keep the logo readable when that happens, each PNG has a fine halo in its own card colour: white for the light logo, #292929 for the dark one. On the right background the halo doesn't show.
-- The 0.5px divider becomes a 1px line in the blended tone (#898989 on light, #949494 on dark), because Outlook can't draw half pixels.
+Outlook can't swap images or styles between light and dark mode, so the signature is coded once and lets Outlook's dark mode recolour it:
+
+- Background: off-white `#FEFEFE`. Text: off-black `#121212`, the black from the design. Neither is pure white or black, so Outlook adjusts them together in dark mode, giving a dark background with light text.
+- Divider: a 1px mid-grey line (`#898989`). It stands in for the design's 0.5px line, because Outlook can't draw half pixels, and it reads on both backgrounds.
+- Logo: one transparent PNG with off-black lettering and a fine off-white halo. In light mode the halo is invisible. In dark mode Outlook leaves images untouched, so the logo shows as off-black lettering with an off-white edge, which reads as an outline. A single image can't turn solid white in dark mode.
+- The off-black and off-white values are `OFF_BLACK` / `OFF_WHITE` at the top of the script in `signature-generator.html`. After changing them, regenerate `logo.png` with the matching colours.
 
 ## Classic Outlook for Windows
 
 The classic desktop app can't show embedded (base64) images. Do this first:
 
-1. Upload both PNGs to a public URL, e.g. `https://www.be-here.travel/email/`.
+1. Upload `logo.png` to a public URL, e.g. `https://www.be-here.travel/email/`.
 2. Put that folder URL in the generator's **Image folder URL** field.
 3. Copy the signature and paste it into Outlook, or use **Download .htm** and save the file to `%APPDATA%\Microsoft\Signatures`.
 
