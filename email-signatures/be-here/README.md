@@ -7,7 +7,8 @@ Built from `Full Design with text example.svg`. A single signature that works in
 | File | What it is |
 | --- | --- |
 | `signature-generator.html` | Open in a browser. Edit the text, then **Copy signature** and paste into Outlook. Works offline, with the logo embedded. |
-| `assets/logo.png` | The fixed logo and strapline at 3× resolution (shown at 148 × 41). Upload it if you want a hosted image. |
+| `assets/logo.png`, `logo-glow.png`, `logo-box.png` | The fixed logo and strapline in each logo style (halo, glow, box), at 3× resolution. Upload them if you want hosted images. |
+| `logo-options.png` | The three logo styles side by side, on a white email and in Outlook's dark mode. |
 | `preview-comparison.png` | Columns, left to right: the original design (card padding cropped off), the build in Instrument Sans, the build in the Arial fallback. Top row: light mode. Bottom row: the original dark design, then a simulation of Outlook's dark mode. |
 
 ## What's editable and what's fixed
@@ -35,6 +36,18 @@ Outlook can't swap images or styles between light and dark mode, so the signatur
 - Divider: a 1px mid-grey line (`#898989`). It stands in for the design's 0.5px line, because Outlook can't draw half pixels, and it reads on both backgrounds.
 - Logo: one transparent PNG with off-black lettering and a fine off-white halo. In light mode the halo is invisible. In dark mode Outlook leaves images untouched, so the logo shows as off-black lettering with an off-white edge, which reads as an outline. A single image can't turn solid white in dark mode.
 - The off-black and off-white values are `OFF_BLACK` / `OFF_WHITE` at the top of the script in `signature-generator.html`. After changing them, regenerate `logo.png` with the matching colours.
+
+## Logo styles
+
+Choose one in the generator under **Logo style**. All three use off-black lettering with off-white for the dark-mode treatment, and in every style the lettering sits 22px below the divider, as designed.
+
+| Style | Dark mode | Light mode |
+| --- | --- | --- |
+| **Halo** (default, the version from commit `cb6d507`) | A fine off-white edge, which reads as an outline. | Identical to the design. |
+| **Glow** | A soft off-white glow around the lettering. | Identical to the design. The image is 4px larger at the top, right and bottom to fit the glow. The left edge stays flush with the text, so the glow fades out on that side. |
+| **Box** | An off-white panel at 10% opacity (10px padding, 4px corners), with the halo lettering on top. | The panel is invisible, but its padding moves the logo 10px in from the text edge. Email can't push the box out past the signature's left edge. |
+
+The box keeps the halo because a 10% off-white panel alone doesn't lift off-black lettering enough to read in dark mode.
 
 ## Swapping the logo in dark mode
 
