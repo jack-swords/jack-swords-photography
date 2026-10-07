@@ -1,6 +1,6 @@
 # Be.Here. email signatures (Outlook)
 
-Built from `Full Design with text example.svg`. A single signature that works in both light and dark mode, 316 × 249 px, with spacing matched to the design.
+Built from `Full Design with text example.svg`. A single signature that works in both light and dark mode, with spacing matched to the design. The Figma card (316 px wide, with padding) was only a frame for the design, so the signature has no card, fixed width or padding and sits directly in the email body.
 
 ## Files
 
@@ -8,7 +8,7 @@ Built from `Full Design with text example.svg`. A single signature that works in
 | --- | --- |
 | `signature-generator.html` | Open in a browser. Edit the text, then **Copy signature** and paste into Outlook. Works offline, with the logo embedded. |
 | `assets/logo.png` | The fixed logo and strapline at 3× resolution (shown at 148 × 41). Upload it if you want a hosted image. |
-| `preview-comparison.png` | Columns, left to right: the original design, the build in Instrument Sans, the build in the Arial fallback. Top row: light mode. Bottom row: the original dark design, then a simulation of Outlook's dark mode. |
+| `preview-comparison.png` | Columns, left to right: the original design (card padding cropped off), the build in Instrument Sans, the build in the Arial fallback. Top row: light mode. Bottom row: the original dark design, then a simulation of Outlook's dark mode. |
 
 ## What's editable and what's fixed
 
@@ -23,14 +23,24 @@ The font stack is `'Instrument Sans', Arial, Helvetica, sans-serif`. Outlook doe
 - Body: 12px, weight 400, letter-spacing −1%
 - Every line is 18px tall, the same rhythm as the design
 
+## Width
+
+There's no maximum width. The divider is 266px long, as designed, and the social column starts 147px in. Long names, titles or email addresses don't wrap. Instead they widen the signature, and the divider grows with them. The social column always keeps at least a 24px gap.
+
 ## Light and dark mode: one signature
 
 Outlook can't swap images or styles between light and dark mode, so the signature is coded once and lets Outlook's dark mode recolour it:
 
-- Background: off-white `#FEFEFE`. Text: off-black `#121212`, the black from the design. Neither is pure white or black, so Outlook adjusts them together in dark mode, giving a dark background with light text.
+- No background colour: the signature takes the email's own background. Text: off-black `#121212`, the black from the design, which Outlook's dark mode lightens. The logo halo is off-white `#FEFEFE`.
 - Divider: a 1px mid-grey line (`#898989`). It stands in for the design's 0.5px line, because Outlook can't draw half pixels, and it reads on both backgrounds.
 - Logo: one transparent PNG with off-black lettering and a fine off-white halo. In light mode the halo is invisible. In dark mode Outlook leaves images untouched, so the logo shows as off-black lettering with an off-white edge, which reads as an outline. A single image can't turn solid white in dark mode.
 - The off-black and off-white values are `OFF_BLACK` / `OFF_WHITE` at the top of the script in `signature-generator.html`. After changing them, regenerate `logo.png` with the matching colours.
+
+## Swapping the logo in dark mode
+
+Outlook doesn't support this when the signature is pasted in. A swap needs a `<style>` block, either a `prefers-color-scheme` media query or Outlook's `[data-ogsc]` selectors. Outlook's signature editors strip `<style>` blocks, and if they also dropped the hidden-image styling, both logos would appear. The pasted signature therefore uses the single haloed logo.
+
+The swap only works if the signature is added on the mail server by a signature service such as Exclaimer or CodeTwo, rather than pasted into Outlook. Even then, it only reaches recipients whose mail apps support it: Apple Mail, Outlook for Mac, Outlook.com and Outlook on iOS and Android. Classic Outlook for Windows and Gmail would still show the default logo.
 
 ## Classic Outlook for Windows
 

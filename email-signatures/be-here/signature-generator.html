@@ -24,9 +24,9 @@
   .hint { font-size:12px; color:var(--muted); margin:-6px 0 12px; }
   .previews { display:grid; gap:24px; }
   .preview h2 { font-size:13px; font-weight:600; margin:0 0 10px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
-  .stages { display:grid; grid-template-columns:repeat(auto-fit, minmax(330px, 1fr)); gap:12px; }
-  .stage { padding:20px 7px; border-radius:6px; overflow-x:auto; display:flex; justify-content:center; }
-  .stage.light { background:#e9e9e6; } .stage.dark { background:#444; }
+  .stages { display:grid; gap:12px; }
+  .stage { padding:28px; border-radius:6px; overflow-x:auto; }
+  .stage.light { background:#FFFFFF; border:1px solid var(--line); } .stage.dark { background:#292929; }
   .actions { display:flex; gap:8px; flex-wrap:wrap; }
   button { font:inherit; font-size:13px; font-weight:600; padding:7px 12px; border-radius:6px; border:1px solid var(--accent); background:var(--accent); color:#fff; cursor:pointer; }
   button.ghost { background:transparent; color:var(--accent); }
@@ -79,7 +79,7 @@
     <div class="previews">
       <section class="preview">
         <h2>Signature <span class="actions"><button type="button" data-copy>Copy signature</button><button type="button" class="ghost" data-dl>Download .htm</button></span></h2>
-        <p class="hint" style="margin:0 0 10px">One signature for both modes. Left: as sent. Right: roughly how Outlook shows it in dark mode, where it recolours the background and text but leaves the logo image alone.</p>
+        <p class="hint" style="margin:0 0 10px">One signature for both modes. Top: as sent, on a white email. Bottom: roughly how Outlook shows it in dark mode, where it recolours the text but leaves the logo image alone.</p>
         <div class="stages">
           <div class="stage light"><div id="out-light"></div></div>
           <div class="stage dark"><div id="out-dark"></div></div>
@@ -107,16 +107,17 @@ const LOGO = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAB7CAYAAAAPKjVn
 const FILE = "logo.png";
 
 // One signature for light and dark mode. Outlook can't swap images or styles per mode,
-// so the colours are a very slightly off black and off white rather than pure #000/#FFF:
-// Outlook's dark mode recolours them as a pair, and the logo PNG (off-black lettering
+// so the colours are a very slightly off black and off white rather than pure #000/#FFF.
+// There's no background colour: the signature takes the email's own background, and
+// Outlook's dark mode recolours the off-black text. The logo PNG (off-black lettering
 // with a fine off-white halo, transparent background) stays readable either way.
 // The divider is 0.5px in the design; email clients can't draw half pixels, so it's a
 // 1px rule in the blended mid-grey, which reads correctly on light and dark.
 const OFF_BLACK = "#121212";
 const OFF_WHITE = "#FEFEFE";
-const THEME = { bg: OFF_WHITE, ink: OFF_BLACK, rule: "#898989" };
+const THEME = { ink: OFF_BLACK, rule: "#898989" };
 // Preview only: approximates what Outlook's dark mode does to the colours above.
-const OUTLOOK_DARK_PREVIEW = { bg: "#292929", ink: OFF_WHITE, rule: "#949494" };
+const OUTLOOK_DARK_PREVIEW = { ink: OFF_WHITE, rule: "#949494" };
 // Instrument Sans shows where it's installed; Arial matches its widths best otherwise.
 const FONT = "'Instrument Sans', Arial, Helvetica, sans-serif";
 
@@ -143,21 +144,19 @@ function buildSignature(d, imgSrc, t = THEME) {
   const logoHref = d.webUrl || (d.web ? "https://" + d.web.replace(/^https?:\/\//, "") : "");
   const img = `<img src="${esc(imgSrc)}" width="148" height="41" alt="Be.Here. Your invitation to press pause." style="display:block;width:148px;height:41px;border:0;outline:none;text-decoration:none;">`;
 
-  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="316" bgcolor="${t.bg}" style="width:316px;background-color:${t.bg};border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-<tr><td style="padding:0 25px;">
-<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="266" style="width:266px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
-${spacer(39)}
-${d.name ? `<tr><td colspan="2" style="${text(14, 600, -0.14)}">${esc(d.name)}</td></tr>` : ""}
-${d.title ? `<tr><td colspan="2" style="${body}">${esc(d.title)}</td></tr>` : ""}
+  // No card or fixed width: the signature sits straight in the email body. The table's
+  // width only sets the divider's minimum length (266px, as designed); nowrap cells let
+  // longer names, titles or addresses widen it instead of wrapping.
+  const cell = (style, inner, attrs = "") => `<td${attrs} nowrap style="white-space:nowrap;${style}">${inner}</td>`;
+  return `<table cellpadding="0" cellspacing="0" border="0" role="presentation" width="266" style="width:266px;border-collapse:collapse;mso-table-lspace:0pt;mso-table-rspace:0pt;">
+${d.name ? `<tr>${cell(text(14, 600, -0.14), esc(d.name), ' colspan="2"')}</tr>` : ""}
+${d.title ? `<tr>${cell(body, esc(d.title), ' colspan="2"')}</tr>` : ""}
 ${spacer(14)}
-<tr><td width="147" valign="top" style="width:147px;${body}">${left}</td><td width="119" valign="top" style="width:119px;${body}">${right}</td></tr>
+<tr>${cell("width:123px;" + body, left, ' width="123" valign="top"')}${cell("padding-left:24px;" + body, right, ' valign="top"')}</tr>
 ${spacer(24)}
 <tr><td colspan="2" height="1" bgcolor="${t.rule}" style="height:1px;background-color:${t.rule};font-size:1px;line-height:1px;mso-line-height-rule:exactly;">&nbsp;</td></tr>
 ${spacer(22)}
 <tr><td colspan="2" style="font-size:1px;line-height:1px;">${logoHref ? `<a href="${esc(logoHref)}" style="text-decoration:none;">${img}</a>` : img}</td></tr>
-${spacer(18)}
-</table>
-</td></tr>
 </table>`;
 }
 
