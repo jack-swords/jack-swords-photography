@@ -11,3 +11,4 @@ next-env.d.ts
 .sanity
 /seed-output
 /preview
+/backups
