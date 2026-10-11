@@ -17,7 +17,7 @@ export const sitemapQuery = defineQuery(`{
 export const imageCountFragment = `
   count(blocks[_type in ["imageSingle", "imageFullBleed"]])
   + 2 * count(blocks[_type in ["imagePair", "imageOffset"]])
-  + coalesce(math::sum(blocks[_type == "imageGrid2x2"]{"n": count(images)}.n), 0)
+  + coalesce(math::sum(blocks[_type in ["imageGrid2x2", "imageRow"]]{"n": count(images)}.n), 0)
 `
 
 /** Everything an image needs to render without layout shift: dimensions, LQIP, crop and hotspot. */
@@ -67,6 +67,7 @@ export const projectQuery = defineQuery(`*[_type == "project" && slug.current ==
     _type == "imageFullBleed" => {fullHeight, "image": image ${imageFields}},
     _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left ${imageFields}, "right": right ${imageFields}},
     _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] ${imageFields}},
+    _type == "imageRow" => {layout, width, gap, verticalAlign, mobile, "images": images[] ${imageFields}},
     _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first ${imageFields}, "second": second ${imageFields}},
     _type == "textBlock" => {body},
     _type == "spacer" => {size}

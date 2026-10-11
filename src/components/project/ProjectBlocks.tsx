@@ -1,7 +1,7 @@
 import type {PortableTextBlock} from '@portabletext/types'
 
 import {RichText} from '@/components/RichText'
-import {viewportCoverSizes} from '@/components/SanityImage'
+import {croppedSize, viewportCoverSizes} from '@/components/SanityImage'
 import {editAttr, type EditTarget} from '@/sanity/lib/dataAttribute'
 import type {ProjectQueryResult} from '@/sanity/types'
 
@@ -49,6 +49,22 @@ const offsetLayout = {
 
 const spacerSize = {s: 'h-block-s', m: 'h-block-m', l: 'h-block-l'} as const
 
+// imageRow
+const rowWidth = {medium: {box: 'mx-auto max-w-medium', px: 832}, wide: {box: 'mx-auto max-w-wide', px: 1216}, full: {box: '', px: 0}} as const
+const rowAlign = {top: 'items-start', center: 'items-center', bottom: 'items-end'} as const
+// Equal height: each image grows in proportion to its aspect ratio (--ar), so all share one height.
+const rowHeightLayout = {
+  stack: {row: 'flex flex-col md:flex-row', item: 'md:[flex:var(--ar)_1_0%]'},
+  two: {row: 'grid grid-cols-2 items-start md:flex', item: 'md:[flex:var(--ar)_1_0%]'},
+  keep: {row: 'flex', item: '[flex:var(--ar)_1_0%]'},
+} as const
+// Equal columns: --cols columns of equal width.
+const rowColumnsLayout = {
+  stack: 'grid grid-cols-1 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]',
+  two: 'grid grid-cols-2 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))]',
+  keep: 'grid grid-cols-[repeat(var(--cols),minmax(0,1fr))]',
+} as const
+
 /** Counts every image across the blocks, in reading order (the numbered index uses the same order). */
 export function countImages(blocks: Block[] | null | undefined) {
   let n = 0
@@ -56,7 +72,7 @@ export function countImages(blocks: Block[] | null | undefined) {
     if (block._type === 'imageSingle' || block._type === 'imageFullBleed') n += block.image?.asset ? 1 : 0
     if (block._type === 'imagePair') n += [block.left, block.right].filter((i) => i?.asset).length
     if (block._type === 'imageOffset') n += [block.first, block.second].filter((i) => i?.asset).length
-    if (block._type === 'imageGrid2x2') n += (block.images ?? []).filter((i) => i?.asset).length
+    if (block._type === 'imageGrid2x2' || block._type === 'imageRow') n += (block.images ?? []).filter((i) => i?.asset).length
   }
   return n
 }
@@ -84,6 +100,15 @@ export function ProjectBlocks({blocks, edit = null}: {blocks: Block[] | null | u
                 indices={(block.images ?? []).map(next)}
                 edit={(block.images ?? []).map((image) => at(`images[_key=="${image._key}"]`))}
               />
+          case 'imageRow':
+            return (
+              <ImageRow
+                key={block._key}
+                block={block}
+                indices={(block.images ?? []).map(next)}
+                edit={(block.images ?? []).map((image) => at(`images[_key=="${image._key}"]`))}
+              />
+            )
           case 'imageOffset':
             return <ImageOffset key={block._key} block={block} indices={[next(block.first), next(block.second)]} edit={[at('first'), at('second')]} />
           case 'textBlock':
@@ -165,6 +190,58 @@ function ImageOffset({block, indices, edit}: {block: BlockOf<'imageOffset'>; ind
         <Figure image={block.first} index={indices[0]} edit={edit[0]} sizes={sizes} className={leadsLeft ? layout.left : layout.right} />
         <Figure image={block.second} index={indices[1]} edit={edit[1]} sizes={sizes} className={`${leadsLeft ? layout.right : layout.left} ${drop}`} />
       </div>
+    </div>
+  )
+}
+
+function ImageRow({block, indices, edit}: {block: BlockOf<'imageRow'>; indices: number[]; edit: (string | undefined)[]}) {
+  const images = block.images ?? []
+  const mobile = block.mobile === 'two' || block.mobile === 'keep' ? block.mobile : 'stack'
+  const width = rowWidth[block.width === 'medium' || block.width === 'full' ? block.width : 'wide']
+  const gap = gapSize[block.gap ?? 'm']
+  const equalHeight = block.layout !== 'columns'
+
+  const ratios = images.map((image) => {
+    if (!image?.asset) return 1
+    const {width: w, height: h} = croppedSize(image)
+    return w / h
+  })
+  const total = ratios.reduce((a, b) => a + b, 0) || 1
+
+  // How much of the row each image takes, for the browser's choice of image size.
+  const sizesFor = (i: number) => {
+    const share = equalHeight ? ratios[i] / total : 1 / images.length
+    const desktop = width.px ? `${Math.ceil(width.px * share)}px` : `${Math.ceil(100 * share)}vw`
+    const phone = mobile === 'stack' ? '100vw' : mobile === 'two' ? '50vw' : `${Math.ceil(100 * share)}vw`
+    return `(min-width: 768px) ${desktop}, ${phone}`
+  }
+
+  return (
+    <div className="px-gutter">
+      {equalHeight ? (
+        <div className={`${width.box} ${rowHeightLayout[mobile].row} ${gap}`}>
+          {images.map((image, i) => (
+            <Figure
+              key={image._key ?? i}
+              image={image}
+              index={indices[i]}
+              edit={edit[i]}
+              sizes={sizesFor(i)}
+              className={`min-w-0 ${rowHeightLayout[mobile].item}`}
+              style={{'--ar': ratios[i]} as React.CSSProperties}
+            />
+          ))}
+        </div>
+      ) : (
+        <div
+          className={`${width.box} ${rowColumnsLayout[mobile]} ${rowAlign[block.verticalAlign ?? 'top']} ${gap}`}
+          style={{'--cols': images.length} as React.CSSProperties}
+        >
+          {images.map((image, i) => (
+            <Figure key={image._key ?? i} image={image} index={indices[i]} edit={edit[i]} sizes={sizesFor(i)} className="min-w-0" />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

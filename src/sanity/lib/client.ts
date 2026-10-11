@@ -10,7 +10,7 @@ import {apiVersion, dataset, projectId} from '../env'
 const NON_TEXT_FIELDS = new Set([
   // layout options
   'mediaType', 'heroTextTone', 'width', 'align', 'gap', 'verticalAlign', 'crop', 'leadSide', 'offset', 'size',
-  'format', 'theme', 'indexPreviewMode', 'keepColumnsOnMobile',
+  'format', 'theme', 'indexPreviewMode', 'keepColumnsOnMobile', 'layout', 'mobile',
   // data that is parsed, not displayed
   'slug', 'date', 'lqip', 'url', 'videoUrl', 'ogImage', 'href', 'email', 'phone',
 ])

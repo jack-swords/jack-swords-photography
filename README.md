@@ -84,7 +84,8 @@ Every push to a branch gets a preview deployment.
 - **Singletons** (fixed IDs, no create/delete in Studio): `siteSettings`, `homepage`, `about`
 - **`project`**: title, slug, subtitle, hero (image, or video file/URL plus poster), overlay text tone, credits, categories, date, `blocks`, next projects, SEO. Manual order via drag and drop in Studio (`orderRank`), with date as the fallback sort.
 - **`category`**: title, slug, manual order
-- **Blocks** (the `blocks` array on a project): `imageSingle`, `imageFullBleed`, `imagePair`, `imageGrid2x2`, `imageOffset`, `textBlock`, `spacer`. The text block is named `textBlock` because `text` is a built-in Sanity type.
+- **Blocks** (the `blocks` array on a project): `imageRow` (Row), `imageSingle`, `imageFullBleed`, `imageOffset`, `imagePair`, `imageGrid2x2`, `textBlock`, `spacer`.
+- **Row** is the general-purpose layout: any number of images side by side (4 or fewer recommended). *Equal height* lines images up on one height using their proportions, so portrait and landscape mix without cropping; *Equal columns* gives each the same width. Options: width (medium / wide / full), gap, vertical alignment (equal columns), and phone behaviour (one per line, two per line, or keep the row). Stack rows to build any grid. The text block is named `textBlock` because `text` is a built-in Sanity type.
 - Every image uses the shared `photo` type: hotspot, required alt text, and a two-line caption (`caption`, `captionSecondary`). GPS location is never extracted into asset metadata.
 - Image counts are derived in GROQ from the blocks (`imageCountFragment` in `src/sanity/lib/queries.ts`), never typed in.
 

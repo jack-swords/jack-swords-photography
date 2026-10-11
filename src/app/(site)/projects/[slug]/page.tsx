@@ -65,7 +65,7 @@ export default async function ProjectPage({params}: Props) {
     if (b._type === 'imageSingle' || b._type === 'imageFullBleed') return [b.image]
     if (b._type === 'imagePair') return [b.left, b.right]
     if (b._type === 'imageOffset') return [b.first, b.second]
-    if (b._type === 'imageGrid2x2') return b.images ?? []
+    if (b._type === 'imageGrid2x2' || b._type === 'imageRow') return b.images ?? []
     return []
   })] as ImageValue[]).filter((i): i is NonNullable<ImageValue> => Boolean(i?.asset))
   const structuredData = {

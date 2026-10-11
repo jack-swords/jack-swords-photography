@@ -61,83 +61,6 @@
     }
   },
   {
-    "name": "imageOffset",
-    "type": "type",
-    "value": {
-      "type": "object",
-      "attributes": {
-        "_type": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "string",
-            "value": "imageOffset"
-          }
-        },
-        "first": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "inline",
-            "name": "photo"
-          },
-          "optional": true
-        },
-        "second": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "inline",
-            "name": "photo"
-          },
-          "optional": true
-        },
-        "leadSide": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "left"
-              },
-              {
-                "type": "string",
-                "value": "right"
-              }
-            ]
-          },
-          "optional": true
-        },
-        "offset": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "union",
-            "of": [
-              {
-                "type": "string",
-                "value": "s"
-              },
-              {
-                "type": "string",
-                "value": "m"
-              },
-              {
-                "type": "string",
-                "value": "l"
-              }
-            ]
-          },
-          "optional": true
-        },
-        "keepColumnsOnMobile": {
-          "type": "objectAttribute",
-          "value": {
-            "type": "boolean"
-          },
-          "optional": true
-        }
-      }
-    }
-  },
-  {
     "name": "imageGrid2x2",
     "type": "type",
     "value": {
@@ -306,6 +229,83 @@
     }
   },
   {
+    "name": "imageOffset",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "imageOffset"
+          }
+        },
+        "first": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "photo"
+          },
+          "optional": true
+        },
+        "second": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "inline",
+            "name": "photo"
+          },
+          "optional": true
+        },
+        "leadSide": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "left"
+              },
+              {
+                "type": "string",
+                "value": "right"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "offset": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "s"
+              },
+              {
+                "type": "string",
+                "value": "m"
+              },
+              {
+                "type": "string",
+                "value": "l"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "keepColumnsOnMobile": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "boolean"
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
     "name": "imageFullBleed",
     "type": "type",
     "value": {
@@ -394,6 +394,145 @@
               {
                 "type": "string",
                 "value": "right"
+              }
+            ]
+          },
+          "optional": true
+        }
+      }
+    }
+  },
+  {
+    "name": "imageRow",
+    "type": "type",
+    "value": {
+      "type": "object",
+      "attributes": {
+        "_type": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "string",
+            "value": "imageRow"
+          }
+        },
+        "images": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "array",
+            "of": {
+              "type": "object",
+              "attributes": {
+                "_key": {
+                  "type": "objectAttribute",
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              },
+              "rest": {
+                "type": "inline",
+                "name": "photo"
+              }
+            }
+          },
+          "optional": true
+        },
+        "layout": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "height"
+              },
+              {
+                "type": "string",
+                "value": "columns"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "width": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "medium"
+              },
+              {
+                "type": "string",
+                "value": "wide"
+              },
+              {
+                "type": "string",
+                "value": "full"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "gap": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "s"
+              },
+              {
+                "type": "string",
+                "value": "m"
+              },
+              {
+                "type": "string",
+                "value": "l"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "verticalAlign": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "top"
+              },
+              {
+                "type": "string",
+                "value": "center"
+              },
+              {
+                "type": "string",
+                "value": "bottom"
+              }
+            ]
+          },
+          "optional": true
+        },
+        "mobile": {
+          "type": "objectAttribute",
+          "value": {
+            "type": "union",
+            "of": [
+              {
+                "type": "string",
+                "value": "stack"
+              },
+              {
+                "type": "string",
+                "value": "two"
+              },
+              {
+                "type": "string",
+                "value": "keep"
               }
             ]
           },
@@ -1609,6 +1748,21 @@
                 },
                 "rest": {
                   "type": "inline",
+                  "name": "imageRow"
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "inline",
                   "name": "imageSingle"
                 }
               },
@@ -1639,6 +1793,21 @@
                 },
                 "rest": {
                   "type": "inline",
+                  "name": "imageOffset"
+                }
+              },
+              {
+                "type": "object",
+                "attributes": {
+                  "_key": {
+                    "type": "objectAttribute",
+                    "value": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "rest": {
+                  "type": "inline",
                   "name": "imagePair"
                 }
               },
@@ -1655,21 +1824,6 @@
                 "rest": {
                   "type": "inline",
                   "name": "imageGrid2x2"
-                }
-              },
-              {
-                "type": "object",
-                "attributes": {
-                  "_key": {
-                    "type": "objectAttribute",
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "rest": {
-                  "type": "inline",
-                  "name": "imageOffset"
                 }
               },
               {
