@@ -456,7 +456,7 @@ export type AllSanitySchemaTypes =
 
 // Source: src/sanity/lib/queries.ts
 // Variable: settingsQuery
-// Query: *[_id == "siteSettings"][0]{  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode}
+// Query: *[_id == "siteSettings"][0]{  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode,  "ogImage": ogImage.asset->url}
 export type SettingsQueryResult =
   | {
       title: null;
@@ -466,6 +466,7 @@ export type SettingsQueryResult =
       socialLinks: null;
       theme: null;
       indexPreviewMode: null;
+      ogImage: null;
     }
   | {
       title: string | null;
@@ -475,6 +476,7 @@ export type SettingsQueryResult =
       socialLinks: null;
       theme: null;
       indexPreviewMode: null;
+      ogImage: null;
     }
   | {
       title: string | null;
@@ -484,6 +486,7 @@ export type SettingsQueryResult =
       socialLinks: null;
       theme: null;
       indexPreviewMode: null;
+      ogImage: null;
     }
   | {
       title: string | null;
@@ -501,8 +504,20 @@ export type SettingsQueryResult =
       > | null;
       theme: "dark" | "light" | null;
       indexPreviewMode: "cursor" | "fixed" | null;
+      ogImage: string | null;
     }
   | null;
+
+// Source: src/sanity/lib/queries.ts
+// Variable: sitemapQuery
+// Query: {  "projects": *[_type == "project" && defined(slug.current)]{"slug": slug.current, _updatedAt},  "latest": *[_type in ["homepage", "about", "siteSettings", "project", "category"]] | order(_updatedAt desc)[0]._updatedAt}
+export type SitemapQueryResult = {
+  projects: Array<{
+    slug: string | null;
+    _updatedAt: string;
+  }>;
+  latest: string | null;
+};
 
 // Source: src/sanity/lib/queries.ts
 // Variable: projectsIndexQuery
@@ -961,7 +976,8 @@ export type AboutQueryResult =
 // Query TypeMap
 declare global {
   interface SanityQueries {
-    '*[_id == "siteSettings"][0]{\n  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode\n}': SettingsQueryResult;
+    '*[_id == "siteSettings"][0]{\n  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode,\n  "ogImage": ogImage.asset->url\n}': SettingsQueryResult;
+    '{\n  "projects": *[_type == "project" && defined(slug.current)]{"slug": slug.current, _updatedAt},\n  "latest": *[_type in ["homepage", "about", "siteSettings", "project", "category"]] | order(_updatedAt desc)[0]._updatedAt\n}': SitemapQueryResult;
     '*[_type == "project" && defined(slug.current)]\n  | order(orderRank asc, date desc){\n    _id,\n    title,\n    "slug": slug.current,\n    date,\n    "categories": categories[]->{title, "slug": slug.current},\n    "imageCount": \n  count(blocks[_type in ["imageSingle", "imageFullBleed"]])\n  + 2 * count(blocks[_type in ["imagePair", "imageOffset"]])\n  + coalesce(math::sum(blocks[_type == "imageGrid2x2"]{"n": count(images)}.n), 0)\n,\n    "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}\n  }': ProjectsIndexQueryResult;
     '*[_type == "category" && defined(slug.current)]\n  | order(orderRank asc, title asc){_id, title, "slug": slug.current}': CategoriesQueryResult;
     '*[_type == "project" && defined(slug.current)].slug.current': ProjectSlugsQueryResult;

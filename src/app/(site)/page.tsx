@@ -1,11 +1,17 @@
+import type {Metadata} from 'next'
 import {draftMode} from 'next/headers'
 import Link from 'next/link'
 
+import {JsonLd} from '@/components/JsonLd'
 import {SanityImage} from '@/components/SanityImage'
 import {SiteHeader} from '@/components/SiteHeader'
+import {ogImages} from '@/lib/ogImage'
+import {personSchema} from '@/lib/structuredData'
+import {siteUrl} from '@/sanity/env'
 import {editAttr} from '@/sanity/lib/dataAttribute'
 import {sanityFetch} from '@/sanity/lib/live'
 import {homepageQuery} from '@/sanity/lib/queries'
+import {getSettings} from '@/sanity/lib/settings'
 import type {HomepageQueryResult} from '@/sanity/types'
 
 const formatBox = {
@@ -13,9 +19,22 @@ const formatBox = {
   panorama: 'aspect-[2/1]',
 } as const
 
+function getHomepage() {
+  return sanityFetch<HomepageQueryResult>({query: homepageQuery, tags: ['homepage', 'project', 'category']})
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const [data, settings] = await Promise.all([getHomepage(), getSettings()])
+  // A share image set in Site settings wins (from the layout); otherwise the first selected work.
+  if (settings?.ogImage) return {alternates: {canonical: '/'}}
+  const first = data?.featured?.[0] ?? data?.fallback?.[0]
+  return {alternates: {canonical: '/'}, openGraph: {images: ogImages(first?.image)}}
+}
+
 export default async function HomePage() {
-  const [data, {isEnabled: isDraftMode}] = await Promise.all([
-    sanityFetch<HomepageQueryResult>({query: homepageQuery, tags: ['homepage', 'project', 'category']}),
+  const [data, settings, {isEnabled: isDraftMode}] = await Promise.all([
+    getHomepage(),
+    getSettings(),
     draftMode(),
   ])
   const featured = data?.featured ?? []
@@ -23,10 +42,27 @@ export default async function HomePage() {
   const rows = isFeatured ? featured : (data?.fallback ?? [])
   const edit = isDraftMode && isFeatured ? {id: 'homepage', type: 'homepage'} : null
 
+  const person = personSchema(settings)
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {'@type': 'WebSite', '@id': `${siteUrl}/#website`, url: siteUrl, name: person.name, publisher: {'@id': person['@id']}},
+      person,
+      {
+        '@type': 'ItemList',
+        name: 'Selected works',
+        itemListElement: rows
+          .filter((row) => row.project?.slug)
+          .map((row, i) => ({'@type': 'ListItem', position: i + 1, url: `${siteUrl}/projects/${row.project?.slug}`, name: row.project?.title})),
+      },
+    ],
+  }
+
   return (
     <>
+      <JsonLd data={structuredData} />
       <SiteHeader current="home" />
-      <main className="px-gutter pt-block-s pb-block-m">
+      <main id="main" className="px-gutter pt-block-s pb-block-m">
         <h1 className="sr-only">Selected works</h1>
         <ol className="flex flex-col gap-block-m">
           {rows.map((row, i) => {

@@ -1,7 +1,13 @@
 import {defineQuery} from 'next-sanity'
 
 export const settingsQuery = defineQuery(`*[_id == "siteSettings"][0]{
-  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode
+  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode,
+  "ogImage": ogImage.asset->url
+}`)
+
+export const sitemapQuery = defineQuery(`{
+  "projects": *[_type == "project" && defined(slug.current)]{"slug": slug.current, _updatedAt},
+  "latest": *[_type in ["homepage", "about", "siteSettings", "project", "category"]] | order(_updatedAt desc)[0]._updatedAt
 }`)
 
 /**

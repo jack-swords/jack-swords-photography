@@ -2,23 +2,32 @@ import type {PortableTextBlock} from '@portabletext/types'
 import type {Metadata} from 'next'
 import {draftMode} from 'next/headers'
 
+import {JsonLd} from '@/components/JsonLd'
 import {RichText} from '@/components/RichText'
 import {SanityImage} from '@/components/SanityImage'
 import {SiteHeader} from '@/components/SiteHeader'
+import {ogImages} from '@/lib/ogImage'
+import {personSchema} from '@/lib/structuredData'
+import {siteUrl} from '@/sanity/env'
 import {editAttr} from '@/sanity/lib/dataAttribute'
+import {urlFor} from '@/sanity/lib/image'
 import {sanityFetch} from '@/sanity/lib/live'
 import {aboutQuery} from '@/sanity/lib/queries'
 import {getSettings} from '@/sanity/lib/settings'
 import type {AboutQueryResult} from '@/sanity/types'
 
-export const metadata: Metadata = {
-  title: 'About',
-  alternates: {canonical: '/about'},
+function getAbout() {
+  return sanityFetch<AboutQueryResult>({query: aboutQuery, tags: ['about']})
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const about = await getAbout()
+  return {title: 'About', alternates: {canonical: '/about'}, openGraph: {images: ogImages(about?.portrait)}}
 }
 
 export default async function AboutPage() {
   const [about, settings, {isEnabled: isDraftMode}] = await Promise.all([
-    sanityFetch<AboutQueryResult>({query: aboutQuery, tags: ['about']}),
+    getAbout(),
     getSettings(),
     draftMode(),
   ])
@@ -30,10 +39,22 @@ export default async function AboutPage() {
   const representation = about?.representation ?? []
   const clients = (about?.clients ?? []).filter(Boolean)
 
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'ProfilePage',
+    url: `${siteUrl}/about`,
+    mainEntity: {
+      ...personSchema(settings),
+      ...(about?.portrait?.asset ? {image: urlFor(about.portrait).width(1200).url()} : {}),
+      ...(clients.length ? {knowsAbout: 'Photography'} : {}),
+    },
+  }
+
   return (
     <>
+      <JsonLd data={structuredData} />
       <SiteHeader current="about" />
-      <main className="grid gap-y-block-s px-gutter pt-block-s pb-block-m md:grid-cols-12 md:gap-x-6">
+      <main id="main" className="grid gap-y-block-s px-gutter pt-block-s pb-block-m md:grid-cols-12 md:gap-x-6">
         <h1 className="sr-only">About</h1>
 
         {about?.portrait?.asset ? (
@@ -52,14 +73,14 @@ export default async function AboutPage() {
               <ul>
                 {email ? (
                   <li>
-                    <a href={`mailto:${email}`} className="hover:text-ink-muted">
+                    <a href={`mailto:${email}`} className="inline-block py-1 hover:text-ink-muted">
                       {email}
                     </a>
                   </li>
                 ) : null}
                 {about?.contact?.phone ? (
                   <li>
-                    <a href={`tel:${about.contact.phone.replace(/\s+/g, '')}`} className="hover:text-ink-muted">
+                    <a href={`tel:${about.contact.phone.replace(/\s+/g, '')}`} className="inline-block py-1 hover:text-ink-muted">
                       {about.contact.phone}
                     </a>
                   </li>
@@ -67,7 +88,7 @@ export default async function AboutPage() {
                 {links.map((link) =>
                   link.url ? (
                     <li key={link._key}>
-                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="hover:text-ink-muted">
+                      <a href={link.url} target="_blank" rel="noopener noreferrer" className="inline-block py-1 hover:text-ink-muted">
                         {link.label}
                       </a>
                     </li>
@@ -84,7 +105,7 @@ export default async function AboutPage() {
                   <li key={agent._key}>
                     {agent.region ? <span className="block text-ink-muted">{agent.region}</span> : null}
                     {agent.url ? (
-                      <a href={agent.url} target="_blank" rel="noopener noreferrer" className="block hover:text-ink-muted">
+                      <a href={agent.url} target="_blank" rel="noopener noreferrer" className="block py-1 hover:text-ink-muted">
                         {agent.agency}
                       </a>
                     ) : (
@@ -92,12 +113,12 @@ export default async function AboutPage() {
                     )}
                     {agent.name ? <span className="block">{agent.name}</span> : null}
                     {agent.email ? (
-                      <a href={`mailto:${agent.email}`} className="block hover:text-ink-muted">
+                      <a href={`mailto:${agent.email}`} className="block py-1 hover:text-ink-muted">
                         {agent.email}
                       </a>
                     ) : null}
                     {agent.phone ? (
-                      <a href={`tel:${agent.phone.replace(/\s+/g, '')}`} className="block hover:text-ink-muted">
+                      <a href={`tel:${agent.phone.replace(/\s+/g, '')}`} className="block py-1 hover:text-ink-muted">
                         {agent.phone}
                       </a>
                     ) : null}

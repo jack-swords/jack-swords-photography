@@ -73,7 +73,7 @@ export function ProjectsIndex({
             event.preventDefault()
             onSelect(slug)
           }}
-          className={active ? 'text-ink' : 'text-ink-muted hover:text-ink'}
+          className={`inline-block py-1 ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}
         >
           {label} <span className="tabular-nums">({count})</span>
         </a>
@@ -83,8 +83,8 @@ export function ProjectsIndex({
 
   return (
     <>
-      <nav aria-label="Filter by category" className="px-gutter pt-block-s pb-6">
-        <ul className="flex flex-wrap gap-x-6 gap-y-1">
+      <nav aria-label="Filter by category" className="px-gutter pt-block-s pb-5">
+        <ul className="flex flex-wrap gap-x-6">
           {filterLink(null, 'All projects', projects.length)}
           {filters.map((c) => filterLink(c.slug, c.title ?? c.slug ?? '', counts.get(c.slug ?? '') ?? 0))}
         </ul>

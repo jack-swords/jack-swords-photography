@@ -3,11 +3,15 @@ import {draftMode} from 'next/headers'
 import {notFound} from 'next/navigation'
 import {stegaClean} from 'next-sanity'
 
+import {JsonLd} from '@/components/JsonLd'
+import type {ImageValue} from '@/components/SanityImage'
 import {CloseButton} from '@/components/project/CloseButton'
 import {ImageIndex} from '@/components/project/ImageIndex'
 import {NextProjects} from '@/components/project/NextProjects'
 import {countImages, ProjectBlocks} from '@/components/project/ProjectBlocks'
 import {ProjectHero} from '@/components/project/ProjectHero'
+import {personRef} from '@/lib/structuredData'
+import {siteUrl} from '@/sanity/env'
 import {client} from '@/sanity/lib/client'
 import {sanityFetch} from '@/sanity/lib/live'
 import {editAttr} from '@/sanity/lib/dataAttribute'
@@ -56,9 +60,37 @@ export default async function ProjectPage({params}: Props) {
   const edit = isDraftMode ? {id: project._id, type: 'project'} : null
 
   const total = countImages(project.blocks)
+  const heroStill = project.hero.mediaType === 'video' ? project.hero.poster : project.hero.image
+  const images = ([heroStill, ...(project.blocks ?? []).flatMap((b): ImageValue[] => {
+    if (b._type === 'imageSingle' || b._type === 'imageFullBleed') return [b.image]
+    if (b._type === 'imagePair') return [b.left, b.right]
+    if (b._type === 'imageOffset') return [b.first, b.second]
+    if (b._type === 'imageGrid2x2') return b.images ?? []
+    return []
+  })] as ImageValue[]).filter((i): i is NonNullable<ImageValue> => Boolean(i?.asset))
+  const structuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'CreativeWork',
+    '@id': `${siteUrl}/projects/${project.slug}#work`,
+    name: project.title,
+    url: `${siteUrl}/projects/${project.slug}`,
+    ...(project.subtitle ? {description: project.subtitle} : {}),
+    ...(project.date ? {dateCreated: project.date} : {}),
+    ...(project.categories?.length ? {genre: project.categories.map((c) => c.title)} : {}),
+    author: personRef,
+    creator: personRef,
+    image: images.slice(0, 30).map((image) => ({
+      '@type': 'ImageObject',
+      contentUrl: urlFor(image).width(1600).url(),
+      ...(image.alt ? {description: image.alt} : {}),
+      ...(image.caption ? {caption: [image.caption, image.captionSecondary].filter(Boolean).join(', ')} : {}),
+      creator: personRef,
+    })),
+  }
 
   return (
     <>
+      <JsonLd data={structuredData} />
       <CloseButton />
       <ProjectHero
         siteTitle={settings?.title ?? DEFAULT_SITE_TITLE}
@@ -69,7 +101,7 @@ export default async function ProjectPage({params}: Props) {
         edit={editAttr(edit, project.hero.mediaType === 'video' ? 'hero.poster' : 'hero.image')}
       />
 
-      <main id="story" className="scroll-mt-0">
+      <main id="main">
         <header className="px-gutter pt-block-s pb-block-m">
           <div className="mx-auto max-w-medium">
             <h2 className="text-display">{project.title}</h2>

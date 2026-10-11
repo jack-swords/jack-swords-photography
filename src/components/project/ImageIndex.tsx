@@ -76,7 +76,7 @@ export function ImageIndex({total}: {total: number}) {
             onClick={() => goTo(n)}
             aria-label={`Image ${n} of ${total}`}
             aria-current={active === n ? 'true' : undefined}
-            className={`px-1 py-px text-right tabular-nums transition-opacity duration-300 hover:opacity-100 ${active === n ? 'opacity-100' : 'opacity-35'}`}
+            className={`min-h-6 min-w-6 px-1 text-right tabular-nums transition-opacity duration-300 hover:opacity-100 ${active === n ? 'opacity-100' : 'opacity-50'}`}
           >
             {n}
           </button>

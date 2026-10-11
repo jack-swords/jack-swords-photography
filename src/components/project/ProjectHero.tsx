@@ -49,7 +49,7 @@ export function ProjectHero({siteTitle, title, tone, hero, credits, edit}: Props
       </div>
 
       <a
-        href="#story"
+        href="#main"
         className="absolute bottom-4 left-1/2 -translate-x-1/2 px-2 py-1 opacity-70 hover:opacity-100"
         aria-label="Scroll to the story"
       >

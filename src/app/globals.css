@@ -43,7 +43,7 @@
 :root {
   --paper: #f6f5f2;
   --ink: #161616;
-  --ink-muted: #75736e;
+  --ink-muted: #706e69; /* 4.67:1 on paper (WCAG AA) */
   --rule: #dddad3;
 }
 

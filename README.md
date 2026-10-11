@@ -76,6 +76,7 @@ Every push to a branch gets a preview deployment.
 | `pnpm dev` / `build` / `start` | Next.js |
 | `pnpm lint` / `typecheck` | ESLint / `tsc --noEmit` |
 | `pnpm seed` | Seed demo content (idempotent) |
+| `pnpm import:project <folder> --title "…"` | Turn a folder of photos into a draft project (see below) |
 | `pnpm typegen` | Regenerate `src/sanity/types.ts` from the schemas and GROQ queries. Run it after changing either |
 
 ## Content model
@@ -86,6 +87,27 @@ Every push to a branch gets a preview deployment.
 - **Blocks** (the `blocks` array on a project): `imageSingle`, `imageFullBleed`, `imagePair`, `imageGrid2x2`, `imageOffset`, `textBlock`, `spacer`. The text block is named `textBlock` because `text` is a built-in Sanity type.
 - Every image uses the shared `photo` type: hotspot, required alt text, and a two-line caption (`caption`, `captionSecondary`). GPS location is never extracted into asset metadata.
 - Image counts are derived in GROQ from the blocks (`imageCountFragment` in `src/sanity/lib/queries.ts`), never typed in.
+
+## Importing a shoot
+
+```sh
+pnpm import:project ~/Pictures/salt-flats --title "Salt Flats" --category editorial
+pnpm import:project ./folder --title "…" --category editorial,personal --hero cover.jpg --subtitle "…"
+pnpm import:project ./folder --title "…" --dry-run   # checks files and metadata stripping; uploads nothing
+```
+
+- JPEG, PNG, WebP and TIFF are imported in natural filename order (`2.jpg` before `10.jpg`). Export HEIC as JPEG first.
+- All EXIF/XMP/IPTC metadata, including GPS location, is removed before upload. Upright JPEGs are stripped without re-encoding, so they stay pixel-identical; rotated or non-JPEG files are re-encoded at high quality. Colour profiles are kept. The script refuses to upload anything that still has GPS data.
+- The earliest capture date becomes the project date. The first image (or `--hero`) becomes the hero, and the rest become single-image blocks.
+- The project is created as a **draft** at the top of Projects. Add alt text to each image (the Studio requires it), arrange the blocks, then publish.
+- Categories must already exist (use their slug or title).
+- Needs an Editor token as `SANITY_API_WRITE_TOKEN` in `.env.local`.
+
+## SEO
+
+- Per-page titles, descriptions, canonical URLs and Open Graph/Twitter images. Projects use their SEO fields or hero; other pages use the default share image from Site settings, or a sensible image from the page.
+- `sitemap.xml` (all projects, refreshed with content) and `robots.txt` (Studio and API excluded; non-production deployments ask not to be indexed).
+- Structured data (schema.org JSON-LD): the photographer as a `Person`, `WebSite` and selected works on the homepage, `CollectionPage` on Works, `CreativeWork` with its images on each project, `ProfilePage` on About.
 
 ## Updating content programmatically
 

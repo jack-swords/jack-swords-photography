@@ -9,8 +9,8 @@ export async function SiteHeader({current}: {current?: Section}) {
   const nav = settings?.nav ?? {}
 
   return (
-    <header className="flex items-baseline justify-between gap-4 px-gutter py-4">
-      <Link href="/" className="hover:text-ink-muted">
+    <header className="flex items-baseline justify-between gap-4 px-gutter py-3">
+      <Link href="/" className="inline-block py-1 hover:text-ink-muted">
         {settings?.title ?? DEFAULT_SITE_TITLE}
       </Link>
       <nav aria-label="Main" className="flex gap-3 sm:gap-4">
@@ -24,7 +24,7 @@ export async function SiteHeader({current}: {current?: Section}) {
 
 function NavLink({href, active, label}: {href: string; active: boolean; label: string}) {
   return (
-    <Link href={href} aria-current={active ? 'page' : undefined} className={active ? 'text-ink' : 'text-ink-muted hover:text-ink'}>
+    <Link href={href} aria-current={active ? 'page' : undefined} className={`inline-block py-1 ${active ? 'text-ink' : 'text-ink-muted hover:text-ink'}`}>
       [ {label} ]
     </Link>
   )
