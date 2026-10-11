@@ -65,7 +65,7 @@ export const projectQuery = defineQuery(`*[_type == "project" && slug.current ==
     _key,
     _type,
     _type == "imageSingle" => {width, align, "image": image ${imageFields}},
-    _type == "imageFullBleed" => {fullHeight, "image": image ${imageFields}},
+    _type == "imageFullBleed" => {fullHeight, edgeToEdge, "image": image ${imageFields}},
     _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left ${imageFields}, "right": right ${imageFields}},
     _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] ${imageFields}},
     _type == "imageRow" => {layout, width, gap, verticalAlign, mobile, "images": images[] ${imageFields}},

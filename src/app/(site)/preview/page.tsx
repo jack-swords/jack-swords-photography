@@ -109,7 +109,7 @@ function buildShowcase(assets: Asset[]): Block[] {
     single('p', 'narrow', 'left'),
     label('Single image · wide · centred'),
     single('l', 'wide', 'center'),
-    label('Full-bleed image'),
+    label('Full-width image', 'Keeps the page margin; switch on "Edge to edge" to run it to the screen edges.'),
     {_key: `fb-${key++}`, _type: 'imageFullBleed', fullHeight: false, image: photo(pick('l'))} as unknown as Block,
     label('Offset pair · left leads'),
     {

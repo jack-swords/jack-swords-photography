@@ -138,15 +138,19 @@ function ImageSingle({block, index, edit}: {block: BlockOf<'imageSingle'>; index
 }
 
 function ImageFullBleed({block, index, edit}: {block: BlockOf<'imageFullBleed'>; index: number; edit?: string}) {
+  // Keeps the page margin either side unless the editor chose edge to edge.
+  const edge = block.edgeToEdge === true
   return (
-    <Figure
-      image={block.image}
-      index={index}
-      edit={edit}
-      sizes={block.fullHeight ? viewportCoverSizes(block.image) : '100vw'}
-      crop={block.fullHeight ? 'h-svh' : undefined}
-      captionClassName="px-gutter"
-    />
+    <div className={edge ? '' : 'px-gutter'}>
+      <Figure
+        image={block.image}
+        index={index}
+        edit={edit}
+        sizes={block.fullHeight ? viewportCoverSizes(block.image) : '100vw'}
+        crop={block.fullHeight ? 'h-svh' : undefined}
+        captionClassName={edge ? 'px-gutter' : ''}
+      />
+    </div>
   )
 }
 
