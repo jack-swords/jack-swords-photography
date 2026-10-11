@@ -2,20 +2,21 @@ import Link from 'next/link'
 
 import {DEFAULT_SITE_TITLE, getSettings} from '@/sanity/lib/settings'
 
-type Section = 'home' | 'projects' | 'about'
+type Section = 'home' | 'projects' | 'journal' | 'about'
 
 export async function SiteHeader({current}: {current?: Section}) {
   const settings = await getSettings()
   const nav = settings?.nav ?? {}
 
   return (
-    <header className="flex items-baseline justify-between gap-4 px-gutter py-3">
+    <header className="flex flex-wrap items-baseline justify-between gap-x-4 px-gutter py-3">
       <Link href="/" className="inline-block py-1 hover:text-ink-muted">
         {settings?.title ?? DEFAULT_SITE_TITLE}
       </Link>
-      <nav aria-label="Main" className="flex gap-3 sm:gap-4">
+      <nav aria-label="Main" className="flex flex-wrap gap-x-3 sm:gap-x-4">
         <NavLink href="/" active={current === 'home'} label={nav.home ?? 'Selected'} />
         <NavLink href="/projects" active={current === 'projects'} label={nav.projects ?? 'Works'} />
+        {settings?.hasJournal ? <NavLink href="/journal" active={current === 'journal'} label={nav.journal ?? 'Journal'} /> : null}
         <NavLink href="/about" active={current === 'about'} label={nav.about ?? 'About'} />
       </nav>
     </header>

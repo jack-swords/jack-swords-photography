@@ -1,12 +1,10 @@
-import {Inter_Tight} from 'next/font/google'
 import Link from 'next/link'
 
 import {focalPoint, SanityImage, viewportCoverSizes, type ImageValue} from '@/components/SanityImage'
+import {display} from '@/lib/fonts'
 
 import {HeroVideo} from './HeroVideo'
 
-// Display face for big hero titles. Loaded here, so only project pages fetch it.
-const display = Inter_Tight({subsets: ['latin'], weight: '400', display: 'swap'})
 
 export type HeroText = {
   showTitle?: boolean | null

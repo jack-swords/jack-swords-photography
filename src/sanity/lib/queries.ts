@@ -1,13 +1,16 @@
 import {defineQuery} from 'next-sanity'
 
 export const settingsQuery = defineQuery(`*[_id == "siteSettings"][0]{
-  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode,
-  "ogImage": ogImage.asset->url
+  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode, footer,
+  "ogImage": ogImage.asset->url,
+  "hasJournal": count(*[_type == "post" && defined(slug.current)]) > 0,
+  "representation": *[_id == "about"][0].representation[]{_key, region, agency, url}
 }`)
 
 export const sitemapQuery = defineQuery(`{
   "projects": *[_type == "project" && defined(slug.current)]{"slug": slug.current, _updatedAt},
-  "latest": *[_type in ["homepage", "about", "siteSettings", "project", "category"]] | order(_updatedAt desc)[0]._updatedAt
+  "posts": *[_type == "post" && defined(slug.current)]{"slug": slug.current, _updatedAt},
+  "latest": *[_type in ["homepage", "about", "siteSettings", "project", "category", "post"]] | order(_updatedAt desc)[0]._updatedAt
 }`)
 
 /**
@@ -40,6 +43,20 @@ export const projectsIndexQuery = defineQuery(`*[_type == "project" && defined(s
 export const categoriesQuery = defineQuery(`*[_type == "category" && defined(slug.current)]
   | order(orderRank asc, title asc){_id, title, "slug": slug.current}`)
 
+/** Story blocks, shared by projects and journal entries so both render with the same components. */
+const blocksProjection = `{
+    _key,
+    _type,
+    _type == "imageSingle" => {width, align, "image": image ${imageFields}},
+    _type == "imageFullBleed" => {fullHeight, edgeToEdge, "image": image ${imageFields}},
+    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left ${imageFields}, "right": right ${imageFields}},
+    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] ${imageFields}},
+    _type == "imageRow" => {layout, width, gap, verticalAlign, mobile, "images": images[] ${imageFields}},
+    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first ${imageFields}, "second": second ${imageFields}},
+    _type == "textBlock" => {body},
+    _type == "spacer" => {size}
+  }`
+
 const projectTeaserFields = `_id, title, "slug": slug.current, subtitle,
   "image": coalesce(hero.image, hero.poster) ${imageFields}`
 
@@ -61,18 +78,7 @@ export const projectQuery = defineQuery(`*[_type == "project" && slug.current ==
   },
   credits[]{_key, label, value},
   "categories": categories[]->{title, "slug": slug.current},
-  blocks[]{
-    _key,
-    _type,
-    _type == "imageSingle" => {width, align, "image": image ${imageFields}},
-    _type == "imageFullBleed" => {fullHeight, edgeToEdge, "image": image ${imageFields}},
-    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left ${imageFields}, "right": right ${imageFields}},
-    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] ${imageFields}},
-    _type == "imageRow" => {layout, width, gap, verticalAlign, mobile, "images": images[] ${imageFields}},
-    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first ${imageFields}, "second": second ${imageFields}},
-    _type == "textBlock" => {body},
-    _type == "spacer" => {size}
-  },
+  "blocks": blocks[]${blocksProjection},
   "nextProjects": select(
     count(nextProjects) > 0 => nextProjects[]->{${projectTeaserFields}},
     // Fallback: the next project in the manual order, wrapping round to the first.
@@ -119,3 +125,25 @@ export const previewImagesQuery = defineQuery(`*[_type == "sanity.imageAsset" &&
   | order(_createdAt asc)[0...60]{
     _id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height
   }`)
+
+const postTeaserFields = `_id, title, "slug": slug.current, date, excerpt, tags, "cover": cover ${imageFields}`
+
+export const postsIndexQuery = defineQuery(`*[_type == "post" && defined(slug.current)] | order(date desc, _createdAt desc){${postTeaserFields}}`)
+
+export const postSlugsQuery = defineQuery(`*[_type == "post" && defined(slug.current)].slug.current`)
+
+export const postQuery = defineQuery(`*[_type == "post" && slug.current == $slug][0]{
+  _id,
+  _type,
+  title,
+  "slug": slug.current,
+  date,
+  excerpt,
+  tags,
+  coverLayout,
+  "cover": cover ${imageFields},
+  "blocks": blocks[]${blocksProjection},
+  "relatedProject": relatedProject->{title, "slug": slug.current},
+  "more": *[_type == "post" && defined(slug.current) && slug.current != $slug] | order(date desc)[0...2]{${postTeaserFields}},
+  seo{title, description, "ogImage": ogImage.asset->url}
+}`)

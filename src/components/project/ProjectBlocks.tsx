@@ -7,7 +7,7 @@ import type {ProjectQueryResult} from '@/sanity/types'
 
 import {Figure} from './Figure'
 
-type Block = NonNullable<NonNullable<ProjectQueryResult>['blocks']>[number]
+export type Block = NonNullable<NonNullable<ProjectQueryResult>["blocks"]>[number]
 type BlockOf<T extends Block['_type']> = Extract<Block, {_type: T}>
 
 // Tailwind only sees literal class names, so every variant is spelled out here.

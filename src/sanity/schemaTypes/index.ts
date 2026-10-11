@@ -2,6 +2,7 @@ import {blockTypes} from './blocks'
 import {about} from './documents/about'
 import {category} from './documents/category'
 import {homepage} from './documents/homepage'
+import {post} from './documents/post'
 import {project} from './documents/project'
 import {siteSettings} from './documents/siteSettings'
 import {credit} from './objects/credit'
@@ -13,6 +14,7 @@ import {seo} from './objects/seo'
 export const schemaTypes = [
   // documents
   project,
+  post,
   category,
   homepage,
   about,

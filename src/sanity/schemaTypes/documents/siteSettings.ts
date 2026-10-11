@@ -16,12 +16,33 @@ export const siteSettings = defineType({
       fields: [
         defineField({name: 'home', type: 'string', initialValue: 'Selected'}),
         defineField({name: 'projects', type: 'string', initialValue: 'Works'}),
+        defineField({name: 'journal', type: 'string', initialValue: 'Journal', description: 'Shown once at least one journal entry is published.'}),
         defineField({name: 'about', type: 'string', initialValue: 'About'}),
       ],
     }),
     defineField({name: 'contactEmail', type: 'string', validation: (rule) => rule.email()}),
     defineField({name: 'socialLinks', type: 'array', of: [defineArrayMember({type: 'socialLink'})]}),
     defineField({name: 'ogImage', title: 'Default social share image', type: 'image'}),
+    defineField({
+      name: 'footer',
+      type: 'object',
+      options: {collapsible: true, collapsed: false},
+      fields: [
+        defineField({
+          name: 'statement',
+          type: 'text',
+          rows: 3,
+          description: 'A line or two beside your name in the footer. Leave empty to use the site description.',
+        }),
+        defineField({
+          name: 'copyright',
+          title: 'Copyright line',
+          type: 'string',
+          description: 'Use {year} for the current year.',
+          initialValue: '© {year} Jack Swords. All images © Jack Swords — please ask before using them.',
+        }),
+      ],
+    }),
     defineField({
       name: 'theme',
       type: 'string',

@@ -63,7 +63,7 @@ Every push to a branch gets a preview deployment.
 - **Publish webhook (fallback):** guarantees freshness even when nobody has the site open. In sanity.io/manage → API → **Webhooks** → **Create webhook**:
   - URL: `https://<your-site>/api/revalidate`
   - Dataset: `production`. Trigger on: Create, Update, Delete
-  - Filter: `_type in ["project", "category", "homepage", "about", "siteSettings"]`
+  - Filter: `_type in ["project", "category", "homepage", "about", "siteSettings", "post"]`
   - Projection: `{_type, _id}`. HTTP method: POST
   - Secret: the same value as `SANITY_REVALIDATE_SECRET`
   It expires every cached Sanity fetch; the next visit re-renders with fresh content.
@@ -84,6 +84,8 @@ Every push to a branch gets a preview deployment.
 - **Singletons** (fixed IDs, no create/delete in Studio): `siteSettings`, `homepage`, `about`
 - **`project`**: title, slug, subtitle, hero (image, or video file/URL plus poster), overlay text tone, **hero text** (big title on/off, size, position, typeface, optional title override; top-right detail lines with optional links; bottom-left statement, defaulting to the subtitle), credits (bottom right), categories, date, `blocks`, next projects, SEO. Manual order via drag and drop in Studio (`orderRank`), with date as the fallback sort.
 - **`category`**: title, slug, manual order
+- **`post`** (Journal entry): title, slug, date, excerpt, cover image (wide / full width / hidden), tags, the same story blocks as projects, optional related project, SEO. `/journal` lists entries newest first; `/journal/rss.xml` is an RSS feed. The Journal link appears in the navigation and footer once at least one entry is published.
+- **Footer** (Site settings → Footer): a statement beside the name (defaults to the site description) and a copyright line (`{year}` is replaced with the current year). Contact links come from Site settings, representation from About.
 - **Blocks** (the `blocks` array on a project): `imageRow` (Row), `imageSingle`, `imageFullBleed`, `imageOffset`, `imagePair`, `imageGrid2x2`, `textBlock`, `spacer`.
 - **Row** is the general-purpose layout: any number of images side by side (4 or fewer recommended). *Equal height* lines images up on one height using their proportions, so portrait and landscape mix without cropping; *Equal columns* gives each the same width. Options: width (medium / wide / full), gap, vertical alignment (equal columns), and phone behaviour (one per line, two per line, or keep the row). Stack rows to build any grid. The text block is named `textBlock` because `text` is a built-in Sanity type.
 - Every image uses the shared `photo` type: hotspot, required alt text, and a two-line caption (`caption`, `captionSecondary`). GPS location is never extracted into asset metadata.

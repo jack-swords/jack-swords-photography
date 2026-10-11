@@ -7,6 +7,7 @@ import {stegaClean} from 'next-sanity'
 import {VisualEditing} from 'next-sanity/visual-editing'
 
 import {DraftModeBanner} from '@/components/DraftModeBanner'
+import {SiteFooter} from '@/components/SiteFooter'
 import {siteUrl} from '@/sanity/env'
 import {SanityLive} from '@/sanity/lib/live'
 import {DEFAULT_SITE_TITLE, getSettings} from '@/sanity/lib/settings'
@@ -40,7 +41,7 @@ export default async function SiteLayout({children}: {children: React.ReactNode}
 
   return (
     <html lang="en" data-theme={settings?.theme === 'dark' ? 'dark' : 'light'} className={`${ui.variable} ${story.variable}`}>
-      <body className="min-h-svh bg-paper text-ink">
+      <body id="top" className="min-h-svh bg-paper text-ink">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-gutter focus:z-50 focus:bg-ink focus:px-3 focus:py-2 focus:text-paper"
@@ -48,6 +49,7 @@ export default async function SiteLayout({children}: {children: React.ReactNode}
           Skip to content
         </a>
         {children}
+        <SiteFooter />
         <SanityLive />
         {isDraftMode ? (
           <>

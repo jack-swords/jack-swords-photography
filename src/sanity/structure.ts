@@ -1,5 +1,6 @@
 import {orderableDocumentListDeskItem} from '@sanity/orderable-document-list'
 import {CogIcon} from '@sanity/icons/Cog'
+import {ComposeIcon} from '@sanity/icons/Compose'
 import {DocumentsIcon} from '@sanity/icons/Documents'
 import {HomeIcon} from '@sanity/icons/Home'
 import {TagIcon} from '@sanity/icons/Tag'
@@ -11,6 +12,10 @@ export const structure: StructureResolver = (S, context) =>
     .title('Content')
     .items([
       orderableDocumentListDeskItem({type: 'project', title: 'Projects', icon: DocumentsIcon, S, context}),
+      S.listItem()
+        .title('Journal')
+        .icon(ComposeIcon)
+        .child(S.documentTypeList('post').title('Journal').defaultOrdering([{field: 'date', direction: 'desc'}])),
       orderableDocumentListDeskItem({type: 'category', title: 'Categories', icon: TagIcon, S, context}),
       S.divider(),
       S.listItem()
