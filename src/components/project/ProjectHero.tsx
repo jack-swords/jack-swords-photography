@@ -20,6 +20,7 @@ export function ProjectHero({siteTitle, title, tone, hero, credits, edit}: Props
 
   return (
     <section
+      data-project-hero
       aria-label={title}
       className={`relative h-svh w-full overflow-hidden ${tone === 'dark' ? 'bg-[#e9e7e2] text-[#161616]' : 'bg-[#161616] text-white'}`}
     >
@@ -27,6 +28,16 @@ export function ProjectHero({siteTitle, title, tone, hero, credits, edit}: Props
         <SanityImage image={still} sizes={viewportCoverSizes(still)} cover preload />
       </div>
       {isVideo && hero.videoUrl && still ? <HeroVideo src={hero.videoUrl} objectPosition={focalPoint(still)} /> : null}
+
+      {/* Soft shading behind the overlay text (top and bottom edges only) so it stays readable over any image or footage. */}
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute inset-0 ${
+          tone === 'dark'
+            ? 'bg-[linear-gradient(to_bottom,rgb(255_255_255/0.35),transparent_18%,transparent_70%,rgb(255_255_255/0.45))]'
+            : 'bg-[linear-gradient(to_bottom,rgb(0_0_0/0.3),transparent_18%,transparent_70%,rgb(0_0_0/0.4))]'
+        }`}
+      />
 
       <div className="absolute inset-0 flex flex-col justify-between px-gutter py-4">
         <Link href="/" className="self-start hover:opacity-60">

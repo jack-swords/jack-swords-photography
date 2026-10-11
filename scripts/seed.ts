@@ -11,8 +11,7 @@
  * Needs NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_WRITE_TOKEN (Editor) in .env.local.
  */
 import {randomUUID} from 'node:crypto'
-import {createReadStream} from 'node:fs'
-import {mkdir, writeFile} from 'node:fs/promises'
+import {mkdir, readFile, writeFile} from 'node:fs/promises'
 import {basename, join} from 'node:path'
 import {parseArgs} from 'node:util'
 
@@ -275,7 +274,7 @@ async function buildDocuments() {
   let nightHero: Record<string, unknown>
   const nightPoster = await photo('night-hero', 'pano', night, 'Swimmers silhouetted against a dark harbour')
   if (heroVideo && !dryRun) {
-    const video = await client.assets.upload('file', createReadStream(heroVideo), {filename: basename(heroVideo)})
+    const video = await client.assets.upload('file', await readFile(heroVideo), {filename: basename(heroVideo), contentType: 'video/mp4'})
     nightHero = {mediaType: 'video', videoFile: {_type: 'file', asset: {_type: 'reference', _ref: video._id}}, poster: nightPoster}
   } else {
     nightHero = {mediaType: 'image', image: nightPoster}

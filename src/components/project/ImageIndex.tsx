@@ -10,6 +10,8 @@ import {useReducedMotion} from '@/lib/useReducedMotion'
  */
 export function ImageIndex({total}: {total: number}) {
   const [active, setActive] = useState<number | null>(null)
+  // Hidden while the hero fills the screen: nothing is "current" yet, and the hero stays uncluttered.
+  const [pastHero, setPastHero] = useState(false)
   // The number last clicked stays highlighted while its image is on the centre line,
   // even when a side-by-side neighbour with a lower number is there too.
   const pinned = useRef<number | null>(null)
@@ -41,6 +43,12 @@ export function ImageIndex({total}: {total: number}) {
       {rootMargin: '-50% 0px -50% 0px'},
     )
     figures.forEach((figure) => observer.observe(figure))
+
+    const hero = document.querySelector('[data-project-hero]')
+    const heroObserver = hero
+      ? new IntersectionObserver(([entry]) => setPastHero(entry.intersectionRatio < 0.5), {threshold: [0, 0.5, 1]})
+      : null
+    if (hero) heroObserver?.observe(hero)
     // Scrolling by hand cancels a pending jump.
     const unpin = () => {
       pinned.current = null
@@ -49,6 +57,7 @@ export function ImageIndex({total}: {total: number}) {
     window.addEventListener('touchmove', unpin, {passive: true})
     return () => {
       observer.disconnect()
+      heroObserver?.disconnect()
       window.removeEventListener('wheel', unpin)
       window.removeEventListener('touchmove', unpin)
     }
@@ -67,7 +76,7 @@ export function ImageIndex({total}: {total: number}) {
     <>
       <nav
         aria-label="Images"
-        className="fixed top-1/2 right-gutter z-20 hidden max-h-[80svh] -translate-y-1/2 flex-col overflow-y-auto text-white mix-blend-difference md:flex"
+        className={`fixed top-1/2 right-gutter z-20 hidden max-h-[80svh] -translate-y-1/2 flex-col overflow-y-auto text-white mix-blend-difference transition-opacity duration-500 motion-reduce:transition-none md:flex ${pastHero ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
       >
         {Array.from({length: total}, (_, i) => i + 1).map((n) => (
           <button
