@@ -112,3 +112,9 @@ export const aboutQuery = defineQuery(`*[_id == "about"][0]{
   contact{email, phone, links[]{_key, label, url}},
   representation[]{_key, region, agency, name, email, phone, url}
 }`)
+
+/** Images already used in projects, for the /preview layout showcase. */
+export const previewImagesQuery = defineQuery(`*[_type == "sanity.imageAsset" && count(*[_type == "project" && references(^._id)]) > 0]
+  | order(_createdAt asc)[0...60]{
+    _id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height
+  }`)
