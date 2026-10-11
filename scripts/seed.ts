@@ -28,17 +28,19 @@ const {values: args} = parseArgs({
 const dryRun = args['dry-run']
 const outDir = join(process.cwd(), 'seed-output')
 
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID
+const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID || 'byr3hdce'
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || 'production'
 const token = process.env.SANITY_API_WRITE_TOKEN
 
-if (!dryRun && (!projectId || !token)) {
-  console.error('Set NEXT_PUBLIC_SANITY_PROJECT_ID and SANITY_API_WRITE_TOKEN in .env.local (or use --dry-run).')
-  process.exit(1)
+if (!dryRun && !token) {
+  // Without a token, writes only succeed if something else authenticates the request
+  // (e.g. a cloud environment's API credential added by its proxy). Otherwise Sanity
+  // rejects the first upload with "Insufficient permissions".
+  console.warn('SANITY_API_WRITE_TOKEN is not set; relying on an injected credential.')
 }
 
 const client = createClient({
-  projectId: projectId || 'unconfigured',
+  projectId,
   dataset,
   token,
   apiVersion: '2026-09-01',
