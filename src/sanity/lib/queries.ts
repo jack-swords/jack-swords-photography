@@ -23,3 +23,51 @@ export const projectsIndexQuery = defineQuery(`*[_type == "project" && defined(s
     "categories": categories[]->{title, "slug": slug.current},
     "imageCount": ${imageCountFragment}
   }`)
+
+/** Everything an image needs to render without layout shift: dimensions, LQIP, crop and hotspot. */
+const imageFields = `{
+  _key, alt, caption, captionSecondary, crop, hotspot,
+  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}
+}`
+
+const projectTeaserFields = `_id, title, "slug": slug.current, subtitle,
+  "image": coalesce(hero.image, hero.poster) ${imageFields}`
+
+export const projectSlugsQuery = defineQuery(`*[_type == "project" && defined(slug.current)].slug.current`)
+
+export const projectQuery = defineQuery(`*[_type == "project" && slug.current == $slug][0]{
+  _id,
+  title,
+  "slug": slug.current,
+  subtitle,
+  date,
+  heroTextTone,
+  "hero": {
+    "mediaType": coalesce(hero.mediaType, "image"),
+    "image": hero.image ${imageFields},
+    "poster": hero.poster ${imageFields},
+    "videoUrl": coalesce(hero.videoFile.asset->url, hero.videoUrl)
+  },
+  credits[]{_key, label, value},
+  "categories": categories[]->{title, "slug": slug.current},
+  blocks[]{
+    _key,
+    _type,
+    _type == "imageSingle" => {width, align, "image": image ${imageFields}},
+    _type == "imageFullBleed" => {fullHeight, "image": image ${imageFields}},
+    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left ${imageFields}, "right": right ${imageFields}},
+    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] ${imageFields}},
+    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first ${imageFields}, "second": second ${imageFields}},
+    _type == "textBlock" => {body},
+    _type == "spacer" => {size}
+  },
+  "nextProjects": select(
+    count(nextProjects) > 0 => nextProjects[]->{${projectTeaserFields}},
+    // Fallback: the next project in the manual order, wrapping round to the first.
+    [coalesce(
+      *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank asc)[0],
+      *[_type == "project" && defined(slug.current) && _id != ^._id] | order(orderRank asc)[0]
+    )]{${projectTeaserFields}}
+  ),
+  seo{title, description, "ogImage": ogImage.asset->url}
+}`)

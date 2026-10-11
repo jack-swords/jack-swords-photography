@@ -518,11 +518,271 @@ export type ProjectsIndexQueryResult = Array<{
   imageCount: number | null;
 }>;
 
+// Source: src/sanity/lib/queries.ts
+// Variable: projectSlugsQuery
+// Query: *[_type == "project" && defined(slug.current)].slug.current
+export type ProjectSlugsQueryResult = Array<string | null>;
+
+// Source: src/sanity/lib/queries.ts
+// Variable: projectQuery
+// Query: *[_type == "project" && slug.current == $slug][0]{  _id,  title,  "slug": slug.current,  subtitle,  date,  heroTextTone,  "hero": {    "mediaType": coalesce(hero.mediaType, "image"),    "image": hero.image {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}},    "poster": hero.poster {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}},    "videoUrl": coalesce(hero.videoFile.asset->url, hero.videoUrl)  },  credits[]{_key, label, value},  "categories": categories[]->{title, "slug": slug.current},  blocks[]{    _key,    _type,    _type == "imageSingle" => {width, align, "image": image {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    _type == "imageFullBleed" => {fullHeight, "image": image {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}, "right": right {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}, "second": second {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    _type == "textBlock" => {body},    _type == "spacer" => {size}  },  "nextProjects": select(    count(nextProjects) > 0 => nextProjects[]->{_id, title, "slug": slug.current, subtitle,  "image": coalesce(hero.image, hero.poster) {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}},    // Fallback: the next project in the manual order, wrapping round to the first.    [coalesce(      *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank asc)[0],      *[_type == "project" && defined(slug.current) && _id != ^._id] | order(orderRank asc)[0]    )]{_id, title, "slug": slug.current, subtitle,  "image": coalesce(hero.image, hero.poster) {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}}}  ),  seo{title, description, "ogImage": ogImage.asset->url}}
+export type ProjectQueryResult = {
+  _id: string;
+  title: string | null;
+  slug: string | null;
+  subtitle: string | null;
+  date: string | null;
+  heroTextTone: "dark" | "light" | null;
+  hero: {
+    mediaType: "image" | "video";
+    image: {
+      _key: null;
+      alt: string | null;
+      caption: string | null;
+      captionSecondary: string | null;
+      crop: SanityImageCrop | null;
+      hotspot: SanityImageHotspot | null;
+      asset: {
+        _id: string;
+        url: string | null;
+        lqip: string | null;
+        width: number | null;
+        height: number | null;
+      } | null;
+    } | null;
+    poster: {
+      _key: null;
+      alt: string | null;
+      caption: string | null;
+      captionSecondary: string | null;
+      crop: SanityImageCrop | null;
+      hotspot: SanityImageHotspot | null;
+      asset: {
+        _id: string;
+        url: string | null;
+        lqip: string | null;
+        width: number | null;
+        height: number | null;
+      } | null;
+    } | null;
+    videoUrl: string | null;
+  };
+  credits: Array<{
+    _key: string;
+    label: string | null;
+    value: string | null;
+  }> | null;
+  categories: Array<{
+    title: string | null;
+    slug: string | null;
+  }> | null;
+  blocks: Array<
+    | {
+        _key: string;
+        _type: "imageFullBleed";
+        fullHeight: boolean | null;
+        image: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      }
+    | {
+        _key: string;
+        _type: "imageGrid2x2";
+        crop: "landscape" | "none" | "portrait" | "square" | null;
+        gap: "l" | "m" | "s" | null;
+        keepColumnsOnMobile: boolean | null;
+        images: Array<{
+          _key: string;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        }> | null;
+      }
+    | {
+        _key: string;
+        _type: "imageOffset";
+        leadSide: "left" | "right" | null;
+        offset: "l" | "m" | "s" | null;
+        keepColumnsOnMobile: boolean | null;
+        first: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+        second: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      }
+    | {
+        _key: string;
+        _type: "imagePair";
+        verticalAlign: "bottom" | "top" | null;
+        gap: "l" | "m" | "s" | null;
+        keepColumnsOnMobile: boolean | null;
+        left: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+        right: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      }
+    | {
+        _key: string;
+        _type: "imageSingle";
+        width: "medium" | "narrow" | "wide" | null;
+        align: "center" | "left" | "right" | null;
+        image: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      }
+    | {
+        _key: string;
+        _type: "spacer";
+        size: "l" | "m" | "s" | null;
+      }
+    | {
+        _key: string;
+        _type: "textBlock";
+        body: RichText | null;
+      }
+  > | null;
+  nextProjects:
+    | Array<{
+        _id: string;
+        title: string | null;
+        slug: string | null;
+        subtitle: string | null;
+        image: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      }>
+    | Array<{
+        _id: string;
+        title: string | null;
+        slug: string | null;
+        subtitle: string | null;
+        image: {
+          _key: null;
+          alt: string | null;
+          caption: string | null;
+          captionSecondary: string | null;
+          crop: SanityImageCrop | null;
+          hotspot: SanityImageHotspot | null;
+          asset: {
+            _id: string;
+            url: string | null;
+            lqip: string | null;
+            width: number | null;
+            height: number | null;
+          } | null;
+        } | null;
+      } | null>
+    | null;
+  seo: {
+    title: string | null;
+    description: string | null;
+    ogImage: string | null;
+  } | null;
+} | null;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
     '*[_id == "siteSettings"][0]{\n  title, description, nav, contactEmail, socialLinks, theme, indexPreviewMode\n}': SettingsQueryResult;
     '*[_type == "project" && defined(slug.current)]\n  | order(orderRank asc, date desc){\n    _id,\n    title,\n    "slug": slug.current,\n    date,\n    "categories": categories[]->{title, "slug": slug.current},\n    "imageCount": \n  count(blocks[_type in ["imageSingle", "imageFullBleed"]])\n  + 2 * count(blocks[_type in ["imagePair", "imageOffset"]])\n  + coalesce(math::sum(blocks[_type == "imageGrid2x2"]{"n": count(images)}.n), 0)\n\n  }': ProjectsIndexQueryResult;
+    '*[_type == "project" && defined(slug.current)].slug.current': ProjectSlugsQueryResult;
+    '*[_type == "project" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  subtitle,\n  date,\n  heroTextTone,\n  "hero": {\n    "mediaType": coalesce(hero.mediaType, "image"),\n    "image": hero.image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "poster": hero.poster {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "videoUrl": coalesce(hero.videoFile.asset->url, hero.videoUrl)\n  },\n  credits[]{_key, label, value},\n  "categories": categories[]->{title, "slug": slug.current},\n  blocks[]{\n    _key,\n    _type,\n    _type == "imageSingle" => {width, align, "image": image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageFullBleed" => {fullHeight, "image": image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}, "right": right {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}, "second": second {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "textBlock" => {body},\n    _type == "spacer" => {size}\n  },\n  "nextProjects": select(\n    count(nextProjects) > 0 => nextProjects[]->{_id, title, "slug": slug.current, subtitle,\n  "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    // Fallback: the next project in the manual order, wrapping round to the first.\n    [coalesce(\n      *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank asc)[0],\n      *[_type == "project" && defined(slug.current) && _id != ^._id] | order(orderRank asc)[0]\n    )]{_id, title, "slug": slug.current, subtitle,\n  "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}}\n  ),\n  seo{title, description, "ogImage": ogImage.asset->url}\n}': ProjectQueryResult;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

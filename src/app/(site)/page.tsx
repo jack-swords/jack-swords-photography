@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import {SiteHeader} from '@/components/SiteHeader'
+
 import {sanityFetch} from '@/sanity/lib/client'
 import {projectsIndexQuery} from '@/sanity/lib/queries'
 import type {ProjectsIndexQueryResult} from '@/sanity/types'
@@ -9,7 +11,9 @@ export default async function HomePage() {
   const projects = (await sanityFetch<ProjectsIndexQueryResult>({query: projectsIndexQuery, tags: ['project', 'category']})) ?? []
 
   return (
-    <main className="px-gutter py-block-s">
+    <>
+      <SiteHeader />
+      <main className="px-gutter py-block-s">
       <ul className="divide-y divide-rule border-y border-rule">
         {projects.map((project) => (
           <li key={project._id}>
@@ -21,6 +25,7 @@ export default async function HomePage() {
           </li>
         ))}
       </ul>
-    </main>
+      </main>
+    </>
   )
 }
