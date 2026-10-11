@@ -95,6 +95,8 @@ export default async function ProjectPage({params}: Props) {
       <ProjectHero
         siteTitle={settings?.title ?? DEFAULT_SITE_TITLE}
         title={project.title ?? ''}
+        subtitle={project.subtitle}
+        heroText={project.heroText}
         tone={project.heroTextTone === 'dark' ? 'dark' : 'light'}
         hero={project.hero}
         credits={project.credits ?? []}
@@ -102,12 +104,8 @@ export default async function ProjectPage({params}: Props) {
       />
 
       <main id="main">
-        <header className="px-gutter pt-block-s pb-block-m">
-          <div className="mx-auto max-w-medium">
-            <h2 className="text-display">{project.title}</h2>
-            {project.subtitle ? <p className="mt-6 max-w-prose font-serif text-lead">{project.subtitle}</p> : null}
-          </div>
-        </header>
+        {/* The title and statement now live on the hero; the story starts here. */}
+        <div className="pt-block-m" />
 
         <ProjectBlocks blocks={project.blocks} edit={edit} />
         <div className="h-block-l" />

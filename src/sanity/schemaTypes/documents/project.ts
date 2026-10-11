@@ -130,9 +130,115 @@ export const project = defineType({
       initialValue: 'light',
     }),
     defineField({
+      name: 'heroText',
+      title: 'Hero text',
+      type: 'object',
+      group: 'hero',
+      description: 'Text laid over the hero image. Everything is optional.',
+      options: {collapsible: true, collapsed: false},
+      fields: [
+        defineField({
+          name: 'showTitle',
+          title: 'Show the title large on the hero',
+          type: 'boolean',
+          initialValue: true,
+        }),
+        defineField({
+          name: 'title',
+          title: 'Title text',
+          type: 'string',
+          description: 'Leave empty to use the project title.',
+          hidden: ({parent}) => parent?.showTitle === false,
+        }),
+        defineField({
+          name: 'titleSize',
+          title: 'Title size',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Medium', value: 'medium'},
+              {title: 'Large', value: 'large'},
+              {title: 'Extra large', value: 'xl'},
+            ],
+            layout: 'radio',
+            direction: 'horizontal',
+          },
+          initialValue: 'large',
+          hidden: ({parent}) => parent?.showTitle === false,
+        }),
+        defineField({
+          name: 'titlePosition',
+          title: 'Title position',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Centre', value: 'center'},
+              {title: 'Lower left', value: 'bottom'},
+            ],
+            layout: 'radio',
+            direction: 'horizontal',
+          },
+          initialValue: 'center',
+          hidden: ({parent}) => parent?.showTitle === false,
+        }),
+        defineField({
+          name: 'titleFont',
+          title: 'Title typeface',
+          type: 'string',
+          options: {
+            list: [
+              {title: 'Sans', value: 'sans'},
+              {title: 'Serif', value: 'serif'},
+              {title: 'Mono', value: 'mono'},
+            ],
+            layout: 'radio',
+            direction: 'horizontal',
+          },
+          initialValue: 'sans',
+          hidden: ({parent}) => parent?.showTitle === false,
+        }),
+        defineField({
+          name: 'details',
+          title: 'Details (top right)',
+          description: 'Short lines such as a place, temperature or coordinates. Add a link to make a line clickable.',
+          type: 'array',
+          of: [
+            defineArrayMember({
+              name: 'detail',
+              type: 'object',
+              fields: [
+                defineField({name: 'text', type: 'string', validation: (rule) => rule.required()}),
+                defineField({
+                  name: 'href',
+                  title: 'Link (optional)',
+                  type: 'url',
+                  validation: (rule) => rule.uri({allowRelative: true, scheme: ['http', 'https', 'mailto']}),
+                }),
+              ],
+              preview: {select: {title: 'text', subtitle: 'href'}},
+            }),
+          ],
+        }),
+        defineField({
+          name: 'statement',
+          title: 'Statement (bottom left)',
+          type: 'text',
+          rows: 3,
+          description: 'A line or two. Leave empty to use the subtitle; line breaks are kept.',
+        }),
+        defineField({
+          name: 'showStatement',
+          title: 'Show the statement',
+          type: 'boolean',
+          initialValue: true,
+        }),
+      ],
+    }),
+    defineField({
       name: 'credits',
       type: 'array',
       group: 'hero',
+      description: 'Shown bottom right on the hero.',
       of: [defineArrayMember({type: 'credit'})],
     }),
 

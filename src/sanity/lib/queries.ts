@@ -52,6 +52,7 @@ export const projectQuery = defineQuery(`*[_type == "project" && slug.current ==
   subtitle,
   date,
   heroTextTone,
+  heroText{showTitle, title, titleSize, titlePosition, titleFont, details[]{_key, text, href}, statement, showStatement},
   "hero": {
     "mediaType": coalesce(hero.mediaType, "image"),
     "image": hero.image ${imageFields},
