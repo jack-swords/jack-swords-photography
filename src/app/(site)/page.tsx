@@ -12,7 +12,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader current="home" />
       <main className="px-gutter py-block-s">
       <ul className="divide-y divide-rule border-y border-rule">
         {projects.map((project) => (

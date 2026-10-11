@@ -14,6 +14,12 @@ export const imageCountFragment = `
   + coalesce(math::sum(blocks[_type == "imageGrid2x2"]{"n": count(images)}.n), 0)
 `
 
+/** Everything an image needs to render without layout shift: dimensions, LQIP, crop and hotspot. */
+const imageFields = `{
+  _key, alt, caption, captionSecondary, crop, hotspot,
+  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}
+}`
+
 export const projectsIndexQuery = defineQuery(`*[_type == "project" && defined(slug.current)]
   | order(orderRank asc, date desc){
     _id,
@@ -21,14 +27,12 @@ export const projectsIndexQuery = defineQuery(`*[_type == "project" && defined(s
     "slug": slug.current,
     date,
     "categories": categories[]->{title, "slug": slug.current},
-    "imageCount": ${imageCountFragment}
+    "imageCount": ${imageCountFragment},
+    "image": coalesce(hero.image, hero.poster) ${imageFields}
   }`)
 
-/** Everything an image needs to render without layout shift: dimensions, LQIP, crop and hotspot. */
-const imageFields = `{
-  _key, alt, caption, captionSecondary, crop, hotspot,
-  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}
-}`
+export const categoriesQuery = defineQuery(`*[_type == "category" && defined(slug.current)]
+  | order(orderRank asc, title asc){_id, title, "slug": slug.current}`)
 
 const projectTeaserFields = `_id, title, "slug": slug.current, subtitle,
   "image": coalesce(hero.image, hero.poster) ${imageFields}`
