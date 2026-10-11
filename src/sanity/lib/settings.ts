@@ -1,6 +1,6 @@
 import {cache} from 'react'
 
-import {sanityFetch} from './client'
+import {sanityFetch} from './live'
 import {settingsQuery} from './queries'
 import type {SettingsQueryResult} from '../types'
 

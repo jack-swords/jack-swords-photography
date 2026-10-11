@@ -859,6 +859,105 @@ export type HomepageQueryResult = {
   }>;
 };
 
+// Source: src/sanity/lib/queries.ts
+// Variable: aboutQuery
+// Query: *[_id == "about"][0]{  _id,  _type,  "portrait": portrait {  _key, alt, caption, captionSecondary, crop, hotspot,  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}},  bio,  clients,  contact{email, phone, links[]{_key, label, url}},  representation[]{_key, region, agency, name, email, phone, url}}
+export type AboutQueryResult =
+  | {
+      _id: "about";
+      _type: "about";
+      portrait: {
+        _key: null;
+        alt: string | null;
+        caption: string | null;
+        captionSecondary: string | null;
+        crop: SanityImageCrop | null;
+        hotspot: SanityImageHotspot | null;
+        asset: {
+          _id: string;
+          url: string | null;
+          lqip: string | null;
+          width: number | null;
+          height: number | null;
+        } | null;
+      } | null;
+      bio: RichText | null;
+      clients: Array<string> | null;
+      contact: {
+        email: string | null;
+        phone: string | null;
+        links: Array<{
+          _key: string;
+          label: string | null;
+          url: string | null;
+        }> | null;
+      } | null;
+      representation: Array<{
+        _key: string;
+        region: string | null;
+        agency: string | null;
+        name: string | null;
+        email: string | null;
+        phone: string | null;
+        url: string | null;
+      }> | null;
+    }
+  | {
+      _id: "about";
+      _type: "category";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | {
+      _id: "about";
+      _type: "homepage";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | {
+      _id: "about";
+      _type: "project";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | {
+      _id: "about";
+      _type: "sanity.fileAsset";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | {
+      _id: "about";
+      _type: "sanity.imageAsset";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | {
+      _id: "about";
+      _type: "siteSettings";
+      portrait: null;
+      bio: null;
+      clients: null;
+      contact: null;
+      representation: null;
+    }
+  | null;
+
 // Query TypeMap
 declare global {
   interface SanityQueries {
@@ -868,6 +967,7 @@ declare global {
     '*[_type == "project" && defined(slug.current)].slug.current': ProjectSlugsQueryResult;
     '*[_type == "project" && slug.current == $slug][0]{\n  _id,\n  title,\n  "slug": slug.current,\n  subtitle,\n  date,\n  heroTextTone,\n  "hero": {\n    "mediaType": coalesce(hero.mediaType, "image"),\n    "image": hero.image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "poster": hero.poster {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "videoUrl": coalesce(hero.videoFile.asset->url, hero.videoUrl)\n  },\n  credits[]{_key, label, value},\n  "categories": categories[]->{title, "slug": slug.current},\n  blocks[]{\n    _key,\n    _type,\n    _type == "imageSingle" => {width, align, "image": image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageFullBleed" => {fullHeight, "image": image {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imagePair" => {verticalAlign, gap, keepColumnsOnMobile, "left": left {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}, "right": right {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageGrid2x2" => {crop, gap, keepColumnsOnMobile, "images": images[] {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "imageOffset" => {leadSide, offset, keepColumnsOnMobile, "first": first {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}, "second": second {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    _type == "textBlock" => {body},\n    _type == "spacer" => {size}\n  },\n  "nextProjects": select(\n    count(nextProjects) > 0 => nextProjects[]->{_id, title, "slug": slug.current, subtitle,\n  "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}},\n    // Fallback: the next project in the manual order, wrapping round to the first.\n    [coalesce(\n      *[_type == "project" && defined(slug.current) && orderRank > ^.orderRank] | order(orderRank asc)[0],\n      *[_type == "project" && defined(slug.current) && _id != ^._id] | order(orderRank asc)[0]\n    )]{_id, title, "slug": slug.current, subtitle,\n  "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n}}\n  ),\n  seo{title, description, "ogImage": ogImage.asset->url}\n}': ProjectQueryResult;
     '{\n  "featured": *[_id == "homepage"][0].featured[defined(project->slug.current)]{\n    _key,\n    format,\n    "image": select(\n      defined(image.asset) => image,\n      defined(project->hero.image.asset) => project->hero.image,\n      project->hero.poster\n    ) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "project": project->{_id, title, "slug": slug.current, date, "categories": categories[]->title}\n  },\n  // Used only while nothing is featured yet: the first few projects in the manual order.\n  "fallback": *[_type == "project" && defined(slug.current)] | order(orderRank asc, date desc)[0...4]{\n    "_key": _id,\n    "format": "wide",\n    "image": coalesce(hero.image, hero.poster) {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n    "project": {_id, title, "slug": slug.current, date, "categories": categories[]->title}\n  }\n}': HomepageQueryResult;
+    '*[_id == "about"][0]{\n  _id,\n  _type,\n  "portrait": portrait {\n  _key, alt, caption, captionSecondary, crop, hotspot,\n  "asset": asset->{_id, url, "lqip": metadata.lqip, "width": metadata.dimensions.width, "height": metadata.dimensions.height}\n},\n  bio,\n  clients,\n  contact{email, phone, links[]{_key, label, url}},\n  representation[]{_key, region, agency, name, email, phone, url}\n}': AboutQueryResult;
   }
 }
 // Lets @sanity/client releases that predate the global registry read it too

@@ -2,6 +2,7 @@ import type {PortableTextBlock} from '@portabletext/types'
 
 import {RichText} from '@/components/RichText'
 import {viewportCoverSizes} from '@/components/SanityImage'
+import {editAttr, type EditTarget} from '@/sanity/lib/dataAttribute'
 import type {ProjectQueryResult} from '@/sanity/types'
 
 import {Figure} from './Figure'
@@ -60,7 +61,7 @@ export function countImages(blocks: Block[] | null | undefined) {
   return n
 }
 
-export function ProjectBlocks({blocks}: {blocks: Block[] | null | undefined}) {
+export function ProjectBlocks({blocks, edit = null}: {blocks: Block[] | null | undefined; edit?: EditTarget}) {
   // Numbers are handed out while building the tree, in block order, so they match countImages.
   let counter = 0
   const next = (image: {asset?: unknown} | null | undefined) => (image?.asset ? ++counter : 0)
@@ -68,17 +69,23 @@ export function ProjectBlocks({blocks}: {blocks: Block[] | null | undefined}) {
   return (
     <div className="flex flex-col gap-block-m">
       {(blocks ?? []).map((block) => {
+        const at = (field: string) => editAttr(edit, `blocks[_key=="${block._key}"].${field}`)
         switch (block._type) {
           case 'imageSingle':
-            return <ImageSingle key={block._key} block={block} index={next(block.image)} />
+            return <ImageSingle key={block._key} block={block} index={next(block.image)} edit={at('image')} />
           case 'imageFullBleed':
-            return <ImageFullBleed key={block._key} block={block} index={next(block.image)} />
+            return <ImageFullBleed key={block._key} block={block} index={next(block.image)} edit={at('image')} />
           case 'imagePair':
-            return <ImagePair key={block._key} block={block} indices={[next(block.left), next(block.right)]} />
+            return <ImagePair key={block._key} block={block} indices={[next(block.left), next(block.right)]} edit={[at('left'), at('right')]} />
           case 'imageGrid2x2':
-            return <ImageGrid key={block._key} block={block} indices={(block.images ?? []).map(next)} />
+            return <ImageGrid
+                key={block._key}
+                block={block}
+                indices={(block.images ?? []).map(next)}
+                edit={(block.images ?? []).map((image) => at(`images[_key=="${image._key}"]`))}
+              />
           case 'imageOffset':
-            return <ImageOffset key={block._key} block={block} indices={[next(block.first), next(block.second)]} />
+            return <ImageOffset key={block._key} block={block} indices={[next(block.first), next(block.second)]} edit={[at('first'), at('second')]} />
           case 'textBlock':
             return (
               <div key={block._key} className="px-gutter">
@@ -96,20 +103,21 @@ export function ProjectBlocks({blocks}: {blocks: Block[] | null | undefined}) {
   )
 }
 
-function ImageSingle({block, index}: {block: BlockOf<'imageSingle'>; index: number}) {
+function ImageSingle({block, index, edit}: {block: BlockOf<'imageSingle'>; index: number; edit?: string}) {
   const width = singleWidth[block.width ?? 'medium']
   return (
     <div className="px-gutter">
-      <Figure image={block.image} index={index} sizes={width.sizes} className={`w-full ${width.box} ${singleAlign[block.align ?? 'center']}`} />
+      <Figure image={block.image} index={index} edit={edit} sizes={width.sizes} className={`w-full ${width.box} ${singleAlign[block.align ?? 'center']}`} />
     </div>
   )
 }
 
-function ImageFullBleed({block, index}: {block: BlockOf<'imageFullBleed'>; index: number}) {
+function ImageFullBleed({block, index, edit}: {block: BlockOf<'imageFullBleed'>; index: number; edit?: string}) {
   return (
     <Figure
       image={block.image}
       index={index}
+      edit={edit}
       sizes={block.fullHeight ? viewportCoverSizes(block.image) : '100vw'}
       crop={block.fullHeight ? 'h-svh' : undefined}
       captionClassName="px-gutter"
@@ -117,7 +125,7 @@ function ImageFullBleed({block, index}: {block: BlockOf<'imageFullBleed'>; index
   )
 }
 
-function ImagePair({block, indices}: {block: BlockOf<'imagePair'>; indices: number[]}) {
+function ImagePair({block, indices, edit}: {block: BlockOf<'imagePair'>; indices: number[]; edit: (string | undefined)[]}) {
   const cols = twoColumns[block.keepColumnsOnMobile ? 'keep' : 'stack']
   const sizes = block.keepColumnsOnMobile ? '(min-width: 1280px) 608px, 50vw' : '(min-width: 1280px) 608px, (min-width: 768px) 50vw, 100vw'
   return (
@@ -125,28 +133,28 @@ function ImagePair({block, indices}: {block: BlockOf<'imagePair'>; indices: numb
       <div
         className={`mx-auto grid max-w-wide ${cols} ${gapSize[block.gap ?? 'm']} ${block.verticalAlign === 'bottom' ? 'items-end' : 'items-start'}`}
       >
-        <Figure image={block.left} index={indices[0]} sizes={sizes} />
-        <Figure image={block.right} index={indices[1]} sizes={sizes} />
+        <Figure image={block.left} index={indices[0]} edit={edit[0]} sizes={sizes} />
+        <Figure image={block.right} index={indices[1]} edit={edit[1]} sizes={sizes} />
       </div>
     </div>
   )
 }
 
-function ImageGrid({block, indices}: {block: BlockOf<'imageGrid2x2'>; indices: number[]}) {
+function ImageGrid({block, indices, edit}: {block: BlockOf<'imageGrid2x2'>; indices: number[]; edit: (string | undefined)[]}) {
   const cols = twoColumns[block.keepColumnsOnMobile ? 'keep' : 'stack']
   const sizes = block.keepColumnsOnMobile ? '(min-width: 1280px) 608px, 50vw' : '(min-width: 1280px) 608px, (min-width: 768px) 50vw, 100vw'
   return (
     <div className="px-gutter">
       <div className={`mx-auto grid max-w-wide items-start ${cols} ${gapSize[block.gap ?? 'm']}`}>
         {(block.images ?? []).map((image, i) => (
-          <Figure key={image._key ?? i} image={image} index={indices[i]} sizes={sizes} crop={gridCrop[block.crop ?? 'none']} />
+          <Figure key={image._key ?? i} image={image} index={indices[i]} edit={edit[i]} sizes={sizes} crop={gridCrop[block.crop ?? 'none']} />
         ))}
       </div>
     </div>
   )
 }
 
-function ImageOffset({block, indices}: {block: BlockOf<'imageOffset'>; indices: number[]}) {
+function ImageOffset({block, indices, edit}: {block: BlockOf<'imageOffset'>; indices: number[]; edit: (string | undefined)[]}) {
   const layout = offsetLayout[block.keepColumnsOnMobile ? 'keep' : 'stack']
   const leadsLeft = block.leadSide !== 'right'
   const drop = layout.drop[block.offset ?? 'm']
@@ -154,8 +162,8 @@ function ImageOffset({block, indices}: {block: BlockOf<'imageOffset'>; indices: 
   return (
     <div className="px-gutter">
       <div className={`mx-auto grid max-w-wide items-start ${layout.grid}`}>
-        <Figure image={block.first} index={indices[0]} sizes={sizes} className={leadsLeft ? layout.left : layout.right} />
-        <Figure image={block.second} index={indices[1]} sizes={sizes} className={`${leadsLeft ? layout.right : layout.left} ${drop}`} />
+        <Figure image={block.first} index={indices[0]} edit={edit[0]} sizes={sizes} className={leadsLeft ? layout.left : layout.right} />
+        <Figure image={block.second} index={indices[1]} edit={edit[1]} sizes={sizes} className={`${leadsLeft ? layout.right : layout.left} ${drop}`} />
       </div>
     </div>
   )

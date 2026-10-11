@@ -10,13 +10,15 @@ type Props = {
   /** Extra classes for the caption, e.g. side padding on full-bleed images. */
   captionClassName?: string
   className?: string
+  /** data-sanity attribute for visual editing (draft mode only). */
+  edit?: string
 }
 
-export function Figure({image, index, sizes, crop, captionClassName = '', className = ''}: Props) {
+export function Figure({image, index, sizes, crop, captionClassName = '', className = '', edit}: Props) {
   if (!image?.asset) return null
 
   return (
-    <figure id={`image-${index}`} data-image-index={index} className={`scroll-mt-16 ${className}`}>
+    <figure id={`image-${index}`} data-image-index={index} data-sanity={edit} className={`scroll-mt-16 ${className}`}>
       {crop ? (
         <div className={`relative w-full overflow-hidden ${crop}`}>
           <SanityImage image={image} sizes={sizes} cover />

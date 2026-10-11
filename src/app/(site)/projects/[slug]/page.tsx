@@ -1,12 +1,16 @@
 import type {Metadata} from 'next'
+import {draftMode} from 'next/headers'
 import {notFound} from 'next/navigation'
+import {stegaClean} from 'next-sanity'
 
 import {CloseButton} from '@/components/project/CloseButton'
 import {ImageIndex} from '@/components/project/ImageIndex'
 import {NextProjects} from '@/components/project/NextProjects'
 import {countImages, ProjectBlocks} from '@/components/project/ProjectBlocks'
 import {ProjectHero} from '@/components/project/ProjectHero'
-import {client, sanityFetch} from '@/sanity/lib/client'
+import {client} from '@/sanity/lib/client'
+import {sanityFetch} from '@/sanity/lib/live'
+import {editAttr} from '@/sanity/lib/dataAttribute'
 import {urlFor} from '@/sanity/lib/image'
 import {projectQuery, projectSlugsQuery} from '@/sanity/lib/queries'
 import {DEFAULT_SITE_TITLE, getSettings} from '@/sanity/lib/settings'
@@ -34,20 +38,22 @@ export async function generateMetadata({params}: Props): Promise<Metadata> {
     : heroImage?.asset
       ? urlFor(heroImage).width(1200).height(630).fit('crop').url()
       : undefined
-  const description = project.seo?.description ?? project.subtitle ?? undefined
+  const description = stegaClean(project.seo?.description ?? project.subtitle) ?? undefined
+  const title = stegaClean(project.seo?.title ?? project.title) ?? undefined
 
   return {
-    title: project.seo?.title ?? project.title,
+    title,
     description,
     alternates: {canonical: `/projects/${project.slug}`},
-    openGraph: {type: 'article', title: project.title ?? undefined, description, images: ogImage ? [{url: ogImage, width: 1200, height: 630}] : undefined},
+    openGraph: {type: 'article', title, description, images: ogImage ? [{url: ogImage, width: 1200, height: 630}] : undefined},
   }
 }
 
 export default async function ProjectPage({params}: Props) {
   const {slug} = await params
-  const [project, settings] = await Promise.all([getProject(slug), getSettings()])
+  const [project, settings, {isEnabled: isDraftMode}] = await Promise.all([getProject(slug), getSettings(), draftMode()])
   if (!project) notFound()
+  const edit = isDraftMode ? {id: project._id, type: 'project'} : null
 
   const total = countImages(project.blocks)
 
@@ -60,6 +66,7 @@ export default async function ProjectPage({params}: Props) {
         tone={project.heroTextTone === 'dark' ? 'dark' : 'light'}
         hero={project.hero}
         credits={project.credits ?? []}
+        edit={editAttr(edit, project.hero.mediaType === 'video' ? 'hero.poster' : 'hero.image')}
       />
 
       <main id="story" className="scroll-mt-0">
@@ -70,7 +77,7 @@ export default async function ProjectPage({params}: Props) {
           </div>
         </header>
 
-        <ProjectBlocks blocks={project.blocks} />
+        <ProjectBlocks blocks={project.blocks} edit={edit} />
         <div className="h-block-l" />
         <NextProjects projects={project.nextProjects} />
       </main>

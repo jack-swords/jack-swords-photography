@@ -95,3 +95,13 @@ export const homepageQuery = defineQuery(`{
     "project": {_id, title, "slug": slug.current, date, "categories": categories[]->title}
   }
 }`)
+
+export const aboutQuery = defineQuery(`*[_id == "about"][0]{
+  _id,
+  _type,
+  "portrait": portrait ${imageFields},
+  bio,
+  clients,
+  contact{email, phone, links[]{_key, label, url}},
+  representation[]{_key, region, agency, name, email, phone, url}
+}`)

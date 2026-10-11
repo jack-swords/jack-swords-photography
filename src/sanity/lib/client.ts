@@ -1,33 +1,35 @@
 import {createClient} from 'next-sanity'
 
-import {apiVersion, dataset, isSanityConfigured, projectId} from '../env'
+import {apiVersion, dataset, projectId} from '../env'
+
+/**
+ * Fields whose values drive layout or code rather than being shown as text.
+ * In draft mode, visible strings carry invisible "stega" markers that make
+ * them clickable in the Presentation tool; these must stay clean.
+ */
+const NON_TEXT_FIELDS = new Set([
+  // layout options
+  'mediaType', 'heroTextTone', 'width', 'align', 'gap', 'verticalAlign', 'crop', 'leadSide', 'offset', 'size',
+  'format', 'theme', 'indexPreviewMode', 'keepColumnsOnMobile',
+  // data that is parsed, not displayed
+  'slug', 'date', 'lqip', 'url', 'videoUrl', 'ogImage', 'href', 'email', 'phone',
+])
 
 export const client = createClient({
-  // A placeholder keeps the client constructible before the project exists;
-  // fetches are skipped in that case (see sanityFetch).
   projectId: projectId || 'unconfigured',
   dataset,
   apiVersion,
   useCdn: true,
   perspective: 'published',
+  stega: {
+    studioUrl: '/studio',
+    filter: (props) => {
+      const key = props.sourcePath.at(-1)
+      if (typeof key === 'string' && NON_TEXT_FIELDS.has(key)) return false
+      // Projected keys (e.g. "slug": slug.current) are named in the result path.
+      const resultKey = props.resultPath.at(-1)
+      if (typeof resultKey === 'string' && NON_TEXT_FIELDS.has(resultKey)) return false
+      return props.filterDefault(props)
+    },
+  },
 })
-
-/**
- * Fetch published content, tagged for on-demand revalidation.
- * Every query carries the `sanity` tag plus any document-type tags passed in,
- * so the webhook route (milestone 5) can revalidate precisely.
- */
-export async function sanityFetch<T>({
-  query,
-  params = {},
-  tags = [],
-}: {
-  query: string
-  params?: Record<string, unknown>
-  tags?: string[]
-}): Promise<T | null> {
-  if (!isSanityConfigured) return null
-  return client.fetch<T>(query, params, {
-    next: {tags: ['sanity', ...tags], revalidate: 3600},
-  })
-}

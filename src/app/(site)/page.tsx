@@ -1,8 +1,10 @@
+import {draftMode} from 'next/headers'
 import Link from 'next/link'
 
 import {SanityImage} from '@/components/SanityImage'
 import {SiteHeader} from '@/components/SiteHeader'
-import {sanityFetch} from '@/sanity/lib/client'
+import {editAttr} from '@/sanity/lib/dataAttribute'
+import {sanityFetch} from '@/sanity/lib/live'
 import {homepageQuery} from '@/sanity/lib/queries'
 import type {HomepageQueryResult} from '@/sanity/types'
 
@@ -12,8 +14,14 @@ const formatBox = {
 } as const
 
 export default async function HomePage() {
-  const data = await sanityFetch<HomepageQueryResult>({query: homepageQuery, tags: ['homepage', 'project', 'category']})
-  const rows = data?.featured?.length ? data.featured : (data?.fallback ?? [])
+  const [data, {isEnabled: isDraftMode}] = await Promise.all([
+    sanityFetch<HomepageQueryResult>({query: homepageQuery, tags: ['homepage', 'project', 'category']}),
+    draftMode(),
+  ])
+  const featured = data?.featured ?? []
+  const isFeatured = featured.length > 0
+  const rows = isFeatured ? featured : (data?.fallback ?? [])
+  const edit = isDraftMode && isFeatured ? {id: 'homepage', type: 'homepage'} : null
 
   return (
     <>
@@ -27,7 +35,7 @@ export default async function HomePage() {
             const format = row.format === 'original' || row.format === 'panorama' ? row.format : 'wide'
             const year = project.date?.slice(0, 4)
             return (
-              <li key={row._key}>
+              <li key={row._key} data-sanity={editAttr(edit, `featured[_key=="${row._key}"]`)}>
                 <Link href={`/projects/${project.slug}`} className="group block">
                   {format === 'original' ? (
                     <SanityImage image={row.image} sizes="100vw" preload={i === 0} className="transition-opacity duration-300 group-hover:opacity-90" />

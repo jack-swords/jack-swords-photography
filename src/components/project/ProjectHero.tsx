@@ -10,9 +10,11 @@ type Props = {
   tone: 'light' | 'dark'
   hero: {mediaType: string; image: ImageValue; poster: ImageValue; videoUrl: string | null}
   credits: {_key: string; label: string | null; value: string | null}[]
+  /** data-sanity attribute for the hero media (draft mode only). */
+  edit?: string
 }
 
-export function ProjectHero({siteTitle, title, tone, hero, credits}: Props) {
+export function ProjectHero({siteTitle, title, tone, hero, credits, edit}: Props) {
   const isVideo = hero.mediaType === 'video' && Boolean(hero.videoUrl)
   const still = isVideo ? hero.poster : hero.image
 
@@ -21,7 +23,9 @@ export function ProjectHero({siteTitle, title, tone, hero, credits}: Props) {
       aria-label={title}
       className={`relative h-svh w-full overflow-hidden ${tone === 'dark' ? 'bg-[#e9e7e2] text-[#161616]' : 'bg-[#161616] text-white'}`}
     >
-      <SanityImage image={still} sizes={viewportCoverSizes(still)} cover preload />
+      <div className="absolute inset-0" data-sanity={edit}>
+        <SanityImage image={still} sizes={viewportCoverSizes(still)} cover preload />
+      </div>
       {isVideo && hero.videoUrl && still ? <HeroVideo src={hero.videoUrl} objectPosition={focalPoint(still)} /> : null}
 
       <div className="absolute inset-0 flex flex-col justify-between px-gutter py-4">
