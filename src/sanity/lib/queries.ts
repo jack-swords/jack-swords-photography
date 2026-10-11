@@ -75,3 +75,23 @@ export const projectQuery = defineQuery(`*[_type == "project" && slug.current ==
   ),
   seo{title, description, "ogImage": ogImage.asset->url}
 }`)
+
+export const homepageQuery = defineQuery(`{
+  "featured": *[_id == "homepage"][0].featured[defined(project->slug.current)]{
+    _key,
+    format,
+    "image": select(
+      defined(image.asset) => image,
+      defined(project->hero.image.asset) => project->hero.image,
+      project->hero.poster
+    ) ${imageFields},
+    "project": project->{_id, title, "slug": slug.current, date, "categories": categories[]->title}
+  },
+  // Used only while nothing is featured yet: the first few projects in the manual order.
+  "fallback": *[_type == "project" && defined(slug.current)] | order(orderRank asc, date desc)[0...4]{
+    "_key": _id,
+    "format": "wide",
+    "image": coalesce(hero.image, hero.poster) ${imageFields},
+    "project": {_id, title, "slug": slug.current, date, "categories": categories[]->title}
+  }
+}`)

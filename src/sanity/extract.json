@@ -1338,6 +1338,27 @@
                 },
                 "optional": true
               },
+              "format": {
+                "type": "objectAttribute",
+                "value": {
+                  "type": "union",
+                  "of": [
+                    {
+                      "type": "string",
+                      "value": "wide"
+                    },
+                    {
+                      "type": "string",
+                      "value": "panorama"
+                    },
+                    {
+                      "type": "string",
+                      "value": "original"
+                    }
+                  ]
+                },
+                "optional": true
+              },
               "_type": {
                 "type": "objectAttribute",
                 "value": {

@@ -1,30 +1,66 @@
 import Link from 'next/link'
 
+import {SanityImage} from '@/components/SanityImage'
 import {SiteHeader} from '@/components/SiteHeader'
-
 import {sanityFetch} from '@/sanity/lib/client'
-import {projectsIndexQuery} from '@/sanity/lib/queries'
-import type {ProjectsIndexQueryResult} from '@/sanity/types'
+import {homepageQuery} from '@/sanity/lib/queries'
+import type {HomepageQueryResult} from '@/sanity/types'
 
-// Placeholder until milestone 4 (homepage layout is pending the reference review).
+const formatBox = {
+  wide: 'aspect-video',
+  panorama: 'aspect-[2/1]',
+} as const
+
 export default async function HomePage() {
-  const projects = (await sanityFetch<ProjectsIndexQueryResult>({query: projectsIndexQuery, tags: ['project', 'category']})) ?? []
+  const data = await sanityFetch<HomepageQueryResult>({query: homepageQuery, tags: ['homepage', 'project', 'category']})
+  const rows = data?.featured?.length ? data.featured : (data?.fallback ?? [])
 
   return (
     <>
       <SiteHeader current="home" />
-      <main className="px-gutter py-block-s">
-      <ul className="divide-y divide-rule border-y border-rule">
-        {projects.map((project) => (
-          <li key={project._id}>
-            <Link href={`/projects/${project.slug}`} className="grid grid-cols-[1fr_auto_auto] gap-6 py-2 hover:text-ink-muted">
-              <span>{project.title}</span>
-              <span className="text-ink-muted">{project.categories?.map((c) => c.title).join(', ')}</span>
-              <span className="tabular-nums">{project.imageCount}</span>
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <main className="px-gutter pt-block-s pb-block-m">
+        <h1 className="sr-only">Selected works</h1>
+        <ol className="flex flex-col gap-block-m">
+          {rows.map((row, i) => {
+            const project = row.project
+            if (!project?.slug) return null
+            const format = row.format === 'original' || row.format === 'panorama' ? row.format : 'wide'
+            const year = project.date?.slice(0, 4)
+            return (
+              <li key={row._key}>
+                <Link href={`/projects/${project.slug}`} className="group block">
+                  {format === 'original' ? (
+                    <SanityImage image={row.image} sizes="100vw" preload={i === 0} className="transition-opacity duration-300 group-hover:opacity-90" />
+                  ) : (
+                    <div className={`relative w-full overflow-hidden bg-rule ${formatBox[format]}`}>
+                      <SanityImage
+                        image={row.image}
+                        sizes="100vw"
+                        cover
+                        preload={i === 0}
+                        className="transition-opacity duration-300 group-hover:opacity-90"
+                      />
+                    </div>
+                  )}
+                  <div className="mt-3 grid grid-cols-[2.5rem_minmax(0,1fr)_auto] gap-x-4 md:grid-cols-[3rem_minmax(0,2fr)_minmax(0,1fr)_auto] md:gap-x-6">
+                    <span className="text-ink-muted tabular-nums">{String(i + 1).padStart(2, '0')}</span>
+                    <span>
+                      <span className="group-hover:text-ink-muted">{project.title}</span>
+                      <span className="block text-ink-muted md:hidden">{project.categories?.filter(Boolean).join(', ')}</span>
+                    </span>
+                    <span className="hidden text-ink-muted md:block">{project.categories?.filter(Boolean).join(', ')}</span>
+                    <span className="text-ink-muted tabular-nums">{year}</span>
+                  </div>
+                </Link>
+              </li>
+            )
+          })}
+        </ol>
+        <p className="mt-block-m">
+          <Link href="/projects" className="text-ink-muted hover:text-ink">
+            [ All works ]
+          </Link>
+        </p>
       </main>
     </>
   )

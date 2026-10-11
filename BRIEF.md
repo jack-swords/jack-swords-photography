@@ -37,15 +37,15 @@ Minimal, editorial, lots of whitespace. Small, quiet UI type (one sans or mono f
 
 ## 5. Page specs
 
-### 5.1 Homepage — reference: https://pawelachtelik.com
+### 5.1 Homepage — "Selected works"
 
-**STATUS: TO CONFIRM.** This site renders with JavaScript and its layout hasn't been captured yet. Before building the homepage:
+**Decided (replaces the original reference-site review):** the homepage is a short list of selected works, not an unconventional layout.
 
-1. Open it with Playwright (desktop 1440px and mobile 390px), take screenshots, and scroll through it.
-2. Write a short description of its layout, navigation, and interactions.
-3. Wait for confirmation before implementing.
-
-It's tagged as "minimal / unusual layout", so expect an unconventional arrangement of images rather than a standard grid. The homepage content (which projects/images appear, and in what order) must be controlled from a `homepage` document in Sanity.
+- A few featured projects, each a near-full-width image row with a slight side margin, linking to the project page.
+- Under each image, one quiet line: number, title, categories, year.
+- Images are cropped per row to Wide (16:9, the default) or Panorama (2:1) around the hotspot, or shown at their original ratio. The format is set per item.
+- Which projects appear, in what order, and an optional replacement image for each are controlled by the `homepage` document in Sanity. While nothing is featured, the first few projects in manual order are shown.
+- A `[ All works ]` link at the end goes to `/projects`.
 
 ### 5.2 Projects index — reference: https://julianoni.com/projects/
 
@@ -96,7 +96,7 @@ Portrait, bio (rich text), clients list, contact links, representation/agent det
 ## 6. Data model (Sanity schemas)
 
 - **`siteSettings`** (singleton): site title, nav labels, contact email, social links, default OG image, theme (light/dark), index hover-preview mode.
-- **`homepage`** (singleton): fields depend on 5.1 once confirmed; at minimum an ordered list of featured projects/images.
+- **`homepage`** (singleton): ordered list of featured projects, each with an optional image and a row format (wide / panorama / original).
 - **`category`**: title, slug, order.
 - **`project`**: title, slug, subtitle, categories (refs), date, hero (image or video file/URL + poster), heroTextTone (`light|dark`), credits (array of `{label, value}`), `blocks`, nextProjects (refs), SEO fields (title, description, OG image), orderRank for manual ordering.
 - **`about`** (singleton): portrait, bio, clients, contact, representation.
@@ -124,7 +124,7 @@ Image counts on the index are derived from the blocks, not typed in.
 1. **Scaffold:** Next.js + Sanity project, schemas, Studio at `/studio`, seed script, deploy a preview to Vercel.
 2. **Project page:** hero (5.3) + body stream, all block types, numbered index, close, next projects (5.4).
 3. **Projects index** (5.2) with filters, counts and hover previews.
-4. **Homepage:** screenshot + describe reference first (5.1), then build after confirmation.
+4. **Homepage:** selected works rows (5.1).
 5. **About page**, visual editing (Presentation + Draft Mode), revalidation webhook.
 6. **Import script**, performance/accessibility pass, SEO, production deploy.
 
