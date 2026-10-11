@@ -5,4 +5,9 @@ export const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2026-09
 /** False until a Sanity project ID is set; the site renders a setup notice instead of crashing. */
 export const isSanityConfigured = projectId.length > 0
 
-export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000').replace(/\/$/, '')
+// Explicit setting first, then the production domain Vercel provides at build time.
+const vercelProductionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
+export const siteUrl = (
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (vercelProductionHost ? `https://${vercelProductionHost}` : 'http://localhost:3000')
+).replace(/\/$/, '')
